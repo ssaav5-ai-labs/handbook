@@ -26,13 +26,15 @@ The base devcontainer ([Dockerfile](devcontainer/Dockerfile) + [devcontainer.jso
 | OpenTofu | 1.11.0 | Infrastructure as code (open-source Terraform fork) |
 | sops | 3.10.2 | Encrypted secrets in git (AGE backend) |
 | age | 1.2.1 | SOPS encryption backend |
-| k9s | 0.42.0 | Terminal-based cluster dashboard |
+| k9s | 0.40.10 | Terminal-based cluster dashboard |
 
 Every devcontainer also mounts the handbook at `/knowledge/handbook` (read-write, cached), so any agent in any repo can read ADRs, record journal entries, and follow playbooks without a separate clone.
 
+The canonical devcontainer template lives in the [workstation repo](https://github.com/ssaav5-ai-labs/workstation) at `devcontainer/Dockerfile` and `devcontainer/devcontainer.json`.
+
 ## How to create a new repo devcontainer
 
-See [howto-new-repo-devcontainer.md](howto-new-repo-devcontainer.md). In short: copy the `Dockerfile` and `devcontainer.json` from this domain into the new repo's `.devcontainer/`, then `devpod up .`.
+See [howto-new-repo-devcontainer.md](howto-new-repo-devcontainer.md). In short: copy the `Dockerfile` and `devcontainer.json` from the workstation repo into the new repo's `.devcontainer/`, then `devpod up .`.
 
 ## Repos
 

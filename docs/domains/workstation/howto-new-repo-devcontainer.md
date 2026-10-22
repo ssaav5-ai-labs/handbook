@@ -1,7 +1,7 @@
 ---
 type: howto
 title: Create a new repo with the base devcontainer
-description: Copy the base devcontainer template into a new code repo and verify it starts with the handbook mount.
+description: Copy the base devcontainer template from the workstation repo into a new code repo and verify it starts with the handbook mount.
 domain: workstation
 tags: [devcontainer, devpod]
 status: draft
@@ -9,10 +9,12 @@ created: 2026-10-22
 updated: 2026-10-22
 visibility: public
 reuse: lab-specific
-related: [../index.md, ../devcontainer/devcontainer.json, ../devcontainer/Dockerfile]
+related: [../index.md]
 ---
 
 # Create a new repo with the base devcontainer
+
+The canonical devcontainer template (Dockerfile + devcontainer.json) lives in the **workstation repo** at `~/code/github.com/ssaav5-ai-labs/workstation/devcontainer/`.
 
 ## Prerequisites
 
@@ -24,8 +26,8 @@ related: [../index.md, ../devcontainer/devcontainer.json, ../devcontainer/Docker
 1. Copy the base template into the new repo:
 
 ```powershell
-cp ~/code/github.com/ssaav5-ai-labs/workstation/devcontainer/Dockerfile <new-repo>/.devcontainer/
-cp ~/code/github.com/ssaav5-ai-labs/workstation/devcontainer/devcontainer.json <new-repo>/.devcontainer/
+cp $env:USERPROFILE\code\github.com\ssaav5-ai-labs\workstation\devcontainer\Dockerfile <new-repo>\.devcontainer\
+cp $env:USERPROFILE\code\github.com\ssaav5-ai-labs\workstation\devcontainer\devcontainer.json <new-repo>\.devcontainer\
 ```
 
 2. Start the workspace:
