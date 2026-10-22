@@ -6,7 +6,7 @@ domain: workstation
 tags: [windows, docker, devpod, devcontainer, litellm, openrouter, obsidian, openknowledge]
 status: draft
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-22
 visibility: public
 reuse: portable
 repo: handbook
