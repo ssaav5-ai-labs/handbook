@@ -1,4 +1,5 @@
 site/
 .env
 .gateway-key
+.runs/
 .claude/skills/
