@@ -1,0 +1,34 @@
+site_name: Handbook
+site_url: https://ssaav5-ai-labs.github.io/handbook/
+site_description: Homelab, platform engineering, SRE and AI agent knowledge base
+repo_url: https://github.com/ssaav5-ai-labs/handbook
+theme:
+  name: material
+  features: [navigation.sections, navigation.indexes, search.suggest, content.code.copy]
+  palette:
+    - scheme: default
+      toggle: {icon: material/brightness-7, name: Dark mode}
+    - scheme: slate
+      toggle: {icon: material/brightness-4, name: Light mode}
+plugins:
+  - search
+  - blog:
+      blog_dir: blog
+  - tags
+  - llmstxt:
+      sections:
+        Meta: [meta/*.md]
+        Decisions: [decisions/*.md]
+        Domains: [domains/**/*.md]
+        Patterns: [patterns/*.md]
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc: {permalink: true}
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format

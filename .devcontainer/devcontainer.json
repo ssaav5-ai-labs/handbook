@@ -1,0 +1,16 @@
+{
+  "name": "handbook",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "24" },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "remoteEnv": {
+    "LLM_GATEWAY_URL": "${localEnv:LLM_GATEWAY_URL}",
+    "LLM_GATEWAY_KEY": "${localEnv:LLM_GATEWAY_KEY}",
+    "OPENROUTER_API_KEY": "${localEnv:OPENROUTER_API_KEY}"
+  },
+  "forwardPorts": [8000],
+  "postCreateCommand": "pip install -r requirements.txt && npm install -g opencode-ai @inkeep/open-knowledge && ./scripts/sync-skills.sh",
+  "customizations": { "vscode": { "extensions": ["yzhang.markdown-all-in-one", "redhat.vscode-yaml"] } }
+}
