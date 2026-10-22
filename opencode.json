@@ -13,6 +13,17 @@
     }
   },
   "model": "gateway/code",
+  "permission": {
+    "shell": {
+      "*": "allow",
+      "rm *": "ask",
+      "git push*": "ask",
+      "git reset*": "ask",
+      "git clean*": "ask",
+      "sudo *": "ask",
+      "docker *": "ask"
+    }
+  },
   "mcp": {
     "open-knowledge": {
       "type": "local",
