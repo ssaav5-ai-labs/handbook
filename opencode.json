@@ -12,5 +12,12 @@
       }
     }
   },
-  "model": "gateway/code"
+  "model": "gateway/code",
+  "mcp": {
+    "open-knowledge": {
+      "type": "local",
+      "enabled": true,
+      "command": ["ok", "mcp"]
+    }
+  }
 }

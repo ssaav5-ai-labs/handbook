@@ -3,3 +3,4 @@ site/
 .gateway-key
 .runs/
 .claude/skills/
+.obsidian/
