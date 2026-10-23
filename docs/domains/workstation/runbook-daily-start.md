@@ -51,9 +51,15 @@ You should see the URL, `key set`, and the aliases fast, code, reason and local.
 
 ## Shortcut (optional)
 
-Add this to your PowerShell profile (`notepad $PROFILE`), open a new window, and then `hb` does steps 2-4 in one go:
+Add this to your PowerShell profile (`notepad $PROFILE`), open a new window, and then `hb` (short for "handbook") does steps 1-4 in one go, starting Docker Desktop if it isn't running:
 ```powershell
 function hb {
+  docker info *> $null
+  if ($LASTEXITCODE -ne 0) {
+    Start-Process "$env:ProgramFiles\Docker\Docker\Docker Desktop.exe"
+    Write-Host "Waiting for Docker Desktop..."
+    do { Start-Sleep 3; docker info *> $null } while ($LASTEXITCODE -ne 0)
+  }
   docker compose -f "$env:USERPROFILE\code\github.com\ssaav5-ai-labs\workstation\gateway\compose.yaml" up -d
   devpod up handbook --ide none
   $c = docker ps --format "{{.ID}} {{.Image}}" | Select-String "vsc-handbook" | ForEach-Object { $_.Line.Split(" ")[0] } | Select-Object -First 1
@@ -73,6 +79,7 @@ OpenCode history survives stops and rebuilds (it lives in the `opencode-data` vo
 
 | Symptom | Fix |
 |---|---|
+| `failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine` | Docker Desktop isn't running (step 1). Start it, wait until `docker info` works, then retry. |
 | `devpod` not recognized | The alias from playbook 00 isn't loaded: open a new PowerShell window, or check `$PROFILE`. |
 | `$c` is empty | The container isn't running: rerun step 3 and check `docker ps`. |
 | Env vars empty in the container | They come from Windows user variables at container creation. Check `echo $env:LLM_GATEWAY_URL` in PowerShell, then `devpod up handbook --recreate --ide none`. |

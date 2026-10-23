@@ -47,7 +47,8 @@ A free GitHub organization that's configured like a company's: two-factor authen
 ### 3. Create the repo and push
 **Why:** Gets the handbook under version control in the org.
 **Questions:** None (public visibility comes from ADR-0004).
-**Actions:** `gh repo create ssaav5-ai-labs/handbook --public --source . --push`, then the same for `workstation` and (private, under your personal account) `career-vault`.
+**Actions:** `gh repo create ssaav5-ai-labs/handbook --public --source . --push`. Create `workstation` (public) and `career-vault` (private, under your personal account) empty; the container can't see those folders, so 🧑 you push them from PowerShell.
+**Before pushing `workstation` 🧑:** it holds `gateway/.env` with the gateway master key and the OpenRouter key, and it goes public. In PowerShell, in the workstation folder: `git check-ignore gateway/.env` must print the path, and `git log -p | Select-String "sk-or"` must print nothing. Only then `git remote add origin https://github.com/ssaav5-ai-labs/workstation.git` and `git push -u origin main`.
 **Verify:** `gh repo view ssaav5-ai-labs/handbook` succeeds.
 **Record:** Journal entry.
 
@@ -63,11 +64,12 @@ A free GitHub organization that's configured like a company's: two-factor authen
 **Questions:** Required approvals (recommended: 0, because you can't approve your own PR; automated review stands in).
 **Actions:** Create a **repository-level** ruleset on the default branch (org-level rulesets need the Team plan, but repo rulesets are free on public repos): require a PR, require the `build` status check, block force pushes and deletions, require linear history, and keep the bypass list empty.
 **Verify:** A direct `git push` to `main` is rejected.
+**Repeat per repo:** a repository ruleset covers one repo, so apply the same ruleset to `workstation` once it has a CI job to require (see the how-to), and to every new public repo.
 **Record:** Add a how-to page, `docs/domains/github/howto-rulesets.md`.
 
 ### 6. Security features
 **Why:** Free on public repos and expected in any enterprise.
-**Actions:** Turn on Dependabot alerts and updates, secret scanning, and push protection.
+**Actions:** Turn on Dependabot alerts and updates, secret scanning, and push protection. On public repos the dedicated secret-scanning endpoints return 404; use `gh api -X PATCH repos/<org>/<repo>` with a `security_and_analysis` body instead. In CI, `gitleaks/gitleaks-action` needs a paid license for organization repos, so run the pinned gitleaks CLI instead (as `docs.yml` does).
 **Verify:** `gh api repos/ssaav5-ai-labs/handbook --jq .security_and_analysis` shows them enabled.
 
 ### 7. Publish the site
@@ -78,6 +80,7 @@ A free GitHub organization that's configured like a company's: two-factor authen
 
 ## When it's done
 - Docs updated: `docs/domains/github/`, decision log, journal.
+- 🧑 Push `workstation` (after the `.env` check in step 3) and `career-vault` from PowerShell, then give `workstation` the same security settings.
 - Next playbook: 02 local AI automation (Hermes).
 
 ## Video
