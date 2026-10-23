@@ -7,9 +7,9 @@ status: draft
 visibility: public
 reuse: lab-specific
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-23
 ---
 
 # Proxmox
 
-_Not started. Fill in as work begins: purpose, current state, diagram, links to how-tos, runbooks and ADRs._
+One Proxmox VE host, `pve01`, runs the lab. See [lab hardware](reference-hardware.md) for specs and what fits, and [playbook 02](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/02-proxmox/PLAYBOOK.md) for how it is set up.

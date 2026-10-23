@@ -9,7 +9,7 @@ created: 2026-10-20
 updated: 2026-10-20
 visibility: public
 reuse: portable
-related: [../domains/ai-stack/index.md, 0008-vendor-neutral-ai-stack.md]
+related: [../domains/ai-stack/index.md, 0008-vendor-neutral-ai-stack.md, 0012-langfuse-cloud-until-capacity.md]
 supersedes: []
 superseded_by: []
 blog: candidate
@@ -27,6 +27,8 @@ The AI dev factory, SRE agents and local automations need tracing, cost tracking
 
 ## Decision
 Langfuse, chosen by Shawn on 2026-10-20. It runs locally next to the LLM gateway at first, then moves to k3s in playbook 06. Agents, harnesses and the gateway send traces over OpenTelemetry, never through a Langfuse-only SDK where an OTel path exists.
+
+> **2026-10-23:** hardware limits mean Langfuse Cloud is used until the lab has capacity; see [ADR-0012](0012-langfuse-cloud-until-capacity.md). This decision remains the target.
 
 ## Consequences
 Another stateful service to run (Postgres, ClickHouse, object storage), which is also real SRE practice. Because traces use OpenTelemetry, LangSmith or another backend can be added later with configuration only.

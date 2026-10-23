@@ -18,10 +18,10 @@ Each playbook is a few manual steps plus one prompt. See [how the agent runs the
 |---|---|---|---|---|
 | 00 | [Workstation + knowledge capture](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/00-workstation-knowledge/PLAYBOOK.md) | handbook, workstation | none | done 2026-10-22 |
 | 01 | [GitHub organization + publish handbook](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/01-github-foundation/PLAYBOOK.md) | handbook | 00 | done 2026-10-23 |
-| 02 | Local AI automation (Hermes, sandboxed) + local Langfuse | workstation | 00 | planned |
-| 03 | Proxmox host and VM templates | homelab-infra | 01 | planned |
-| 04 | k3s cluster | homelab-infra | 03 | planned |
-| 05 | Argo CD (app-of-apps) | homelab-gitops | 04 | planned |
-| 06 | Observability; move gateway + Langfuse to the cluster | homelab-gitops | 05 | planned |
-| 07 | SRE management agents (CrewAI over MCP tools) | ai-factory | 06 | planned |
-| 08 | AI dev factory | ai-factory | 06 | planned |
+| 02 | [Proxmox host and the k3s VM](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/02-proxmox/PLAYBOOK.md) | homelab-infra | 01 | draft |
+| 03 | k3s cluster (single node) | homelab-infra | 02 | planned |
+| 04 | Argo CD (app-of-apps) | homelab-gitops | 03 | planned |
+| 05 | Monitoring; move the gateway to the cluster; traces to Langfuse Cloud | homelab-gitops | 04 | planned |
+| 06 | Hermes on k3s (sandboxed) | homelab-gitops | 05 | planned |
+| 07 | SRE management agents (CrewAI over MCP tools) | ai-factory | 05 | planned |
+| 08 | AI dev factory | ai-factory | 05 | planned |

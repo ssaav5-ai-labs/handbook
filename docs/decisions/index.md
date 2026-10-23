@@ -25,3 +25,4 @@ updated: 2026-10-23
 | [0009](0009-hermes-for-local-automation.md) | Hermes Agent for local automations, sandboxed | ai-stack | proposed |
 | [0010](0010-langfuse-for-tracing-and-evals.md) | Self-hosted Langfuse for tracing and evals | ai-stack | accepted |
 | [0011](0011-github-org-name.md) | Single GitHub org `ssaav5-ai-labs` | github | accepted |
+| [0012](0012-langfuse-cloud-until-capacity.md) | Langfuse Cloud (EU, free tier) until the lab can host Langfuse | ai-stack | accepted |

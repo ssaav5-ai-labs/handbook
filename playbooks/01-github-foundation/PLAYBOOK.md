@@ -81,7 +81,7 @@ A free GitHub organization that's configured like a company's: two-factor authen
 ## When it's done
 - Docs updated: `docs/domains/github/`, decision log, journal.
 - 🧑 Push `workstation` (after the `.env` check in step 3) and `career-vault` from PowerShell, then give `workstation` the same security settings.
-- Next playbook: 02 local AI automation (Hermes).
+- Next playbook: [02 Proxmox host and the k3s VM](../02-proxmox/PLAYBOOK.md).
 
 ## Video
 Not recorded yet.
