@@ -4,9 +4,9 @@ title: Build the AI stack on open interfaces with a self-hosted LLM gateway
 description: All agents call models through a LiteLLM gateway using aliases, with OpenRouter as the default upstream; instructions, skills, tools and traces use open standards.
 domain: ai-stack
 tags: [llm, openrouter, litellm, portability, cost]
-status: proposed
+status: accepted
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-23
 visibility: public
 reuse: portable
 related: [../domains/ai-stack/index.md]

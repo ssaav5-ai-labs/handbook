@@ -4,9 +4,9 @@ title: Write setup guides as AI-first playbooks
 description: Each portion of the system is set up by a playbook - manual steps, one kickoff prompt, then agent-guided steps that verify and record as they go.
 domain: meta
 tags: [ai-first, documentation, onboarding]
-status: proposed
+status: accepted
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-23
 visibility: public
 reuse: portable
 related: [../meta/knowledge-system.md]
