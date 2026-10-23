@@ -14,7 +14,7 @@ updated: 2026-10-22
 
 ## What's installed
 
-The base devcontainer ([Dockerfile](devcontainer/Dockerfile) + [devcontainer.json](devcontainer/devcontainer.json)) bakes in every tool a code repo is likely to need:
+The base devcontainer (`Dockerfile` + `devcontainer.json`, see the [workstation repo](https://github.com/ssaav5-ai-labs/workstation)) bakes in every tool a code repo is likely to need:
 
 | Tool | Version | Why |
 |---|---|---|

@@ -4,9 +4,9 @@ title: Clone repos under ~/code/<host>/<owner>/<repo>
 description: Local clones mirror their remote location, so repos from any org or future employer never collide.
 domain: workstation
 tags: []
-status: proposed
+status: accepted
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-23
 visibility: public
 reuse: portable
 related: []

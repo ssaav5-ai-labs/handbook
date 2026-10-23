@@ -4,9 +4,9 @@ title: Keep all knowledge in one central handbook repo
 description: One handbook repo holds knowledge for every domain; code repos hold only README and AGENTS.md pointing to it.
 domain: meta
 tags: []
-status: proposed
+status: accepted
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-23
 visibility: public
 reuse: portable
 related: []

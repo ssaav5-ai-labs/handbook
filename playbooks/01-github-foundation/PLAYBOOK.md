@@ -6,7 +6,7 @@ domain: github
 tags: [github, governance, docs-as-code]
 status: draft
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-23
 visibility: public
 reuse: portable
 repo: handbook
@@ -34,10 +34,10 @@ A free GitHub organization that's configured like a company's: two-factor authen
 ## Steps
 
 ### 1. Confirm names
-**Why:** The org name was chosen in playbook 00; confirm it's still available before creating anything.
+**Why:** The org name was chosen in playbook 00; confirm it exists or is still available before creating anything.
 **Questions:** Custom domain for the site now or later (recommended: later)?
-**Actions:** Check `gh api orgs/ssaav5-ai-labs` returns 404 (name free).
-**Verify:** No `ssaav5-ai-labs` placeholders remain: `grep -r "ssaav5-ai-labs" .` returns nothing.
+**Actions:** Check `gh api orgs/ssaav5-ai-labs` — if it returns the org, skip to step 3; if 404, the name is free and step 2 creates it.
+**Verify:** `gh api orgs/ssaav5-ai-labs --jq .login` prints the name.
 
 ### 2. Create the organization 🧑
 **Why:** GitHub only lets you create a Free organization from the website.
@@ -61,7 +61,7 @@ A free GitHub organization that's configured like a company's: two-factor authen
 ### 5. Branch ruleset
 **Why:** Nothing reaches `main` without a PR and passing checks, which is the change control companies rely on.
 **Questions:** Required approvals (recommended: 0, because you can't approve your own PR; automated review stands in).
-**Actions:** Create an org ruleset on the default branch: require a PR, require the `build` status check, block force pushes and deletions, require linear history.
+**Actions:** Create a **repository-level** ruleset on the default branch (org-level rulesets need the Team plan, but repo rulesets are free on public repos): require a PR, require the `build` status check, block force pushes and deletions, require linear history, and keep the bypass list empty.
 **Verify:** A direct `git push` to `main` is rejected.
 **Record:** Add a how-to page, `docs/domains/github/howto-rulesets.md`.
 

@@ -4,9 +4,9 @@ title: Record decisions as ADRs
 description: Every meaningful choice gets a short, numbered, immutable decision record.
 domain: meta
 tags: []
-status: proposed
+status: accepted
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-23
 visibility: public
 reuse: portable
 related: []
