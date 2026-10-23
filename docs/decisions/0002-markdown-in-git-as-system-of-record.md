@@ -4,9 +4,9 @@ title: Use Markdown with YAML frontmatter in Git as the knowledge system of reco
 description: Knowledge is plain Markdown files with a shared frontmatter schema, versioned in Git; editors are interchangeable.
 domain: meta
 tags: []
-status: proposed
+status: accepted
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-23
 visibility: public
 reuse: portable
 related: []

@@ -4,9 +4,9 @@ title: Keep a private career vault in a personal repo
 description: Private reflections, raw notes and drafts live in a private repo under the personal GitHub account, edited in Obsidian.
 domain: meta
 tags: []
-status: proposed
+status: accepted
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-23
 visibility: public
 reuse: portable
 related: []

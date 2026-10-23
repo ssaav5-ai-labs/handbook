@@ -4,9 +4,9 @@ title: Use a free GitHub organization with public repos
 description: A free GitHub org owns all lab repos; repos are public so enterprise-grade governance features are free.
 domain: github
 tags: []
-status: proposed
+status: accepted
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-23
 visibility: public
 reuse: portable
 related: []
