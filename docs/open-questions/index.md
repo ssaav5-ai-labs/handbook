@@ -22,7 +22,7 @@ updated: 2026-10-27
 | SRE agent framework: CrewAI vs LangGraph | ai-stack | CrewAI, with tools as MCP servers so it stays swappable | Playbook 07 |
 | Uses for the Raspberry Pi 3s | proxmox | Uptime Kuma for outside-the-cluster checks; DNS later. No QDevice (ADR-0013) | After playbook 05 |
 | AI factory architecture | ai-factory | | After platform is up |
-| Proxmox provisioning | proxmox | OpenTofu (bpg/proxmox) + a cloud-init template per node; no Packer or Ansible yet | Playbook 02 |
+| Proxmox provisioning | proxmox | OpenTofu (bpg/proxmox) + cloud-init template | [ADR-0014](../decisions/0014-provision-proxmox-vms-opentofu-bpg-provider.md) |
 | k3s topology (nodes, HA, storage) | k3s | Server (embedded etcd) on `pve01`, agent on `pve02`; three servers when a third node joins ([lab hardware](../domains/proxmox/reference-hardware.md)) | Playbook 03 |
 | GitOps controller | platform | Argo CD (app-of-apps), core components only | Playbook 04 |
 | Secrets management | platform | SOPS + age | Playbook 03-04 |
