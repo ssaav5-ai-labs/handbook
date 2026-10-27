@@ -7,9 +7,9 @@ status: draft
 visibility: public
 reuse: lab-specific
 created: 2026-10-20
-updated: 2026-10-23
+updated: 2026-10-27
 ---
 
 # Proxmox
 
-One Proxmox VE host, `pve01`, runs the lab. See [lab hardware](reference-hardware.md) for specs and what fits, and [playbook 02](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/02-proxmox/PLAYBOOK.md) for how it is set up.
+A two-node Proxmox VE cluster, `pveCluster01` (`pve01`, `pve02`), runs the lab, without a tie-breaker until a third node joins ([ADR-0013](../../decisions/0013-two-nodes-without-qdevice.md), [add a node](howto-add-node.md)). See [lab hardware](reference-hardware.md) for specs and what fits, and [playbook 02](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/02-proxmox/PLAYBOOK.md) for how it is set up.
