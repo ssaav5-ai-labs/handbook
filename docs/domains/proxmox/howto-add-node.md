@@ -53,7 +53,7 @@ Hostname `pve03.<your-domain>`, the fixed address, gateway and DNS, the same sto
 `pve03` must have no VMs. On `pve03`: `pvecm add <pve01-ip>` (root password of `pve01`, accept its fingerprint). Don't add a QDevice: with three nodes Proxmox advises against one.
 
 ### 6. Extend the rest
-Re-run playbook 02: steps 4 to 8 pick up the new node (template `9003`, `k3s-03` in the OpenTofu map, its backups on `backup-on-pve01`). Then k3s grows to three servers: `k3s-03` joins as a server and `k3s-02` is rebuilt as one (etcd needs an odd number of members).
+Re-run playbook 02: steps 4 to 8 pick up the new node (template `9003`, `k3s-03` in the OpenTofu map, its backups on `backup-on-pve01`). Then k3s grows to three servers: `k3s-03` joins as a server and `k3s-02` is rebuilt as one (etcd needs an odd number of members); see [add a k3s server](../k3s/howto-add-server.md).
 
 ## Verify
 `pvecm status` on any node: `Nodes: 3`, `Expected votes: 3`, `Quorate: Yes`. Three green nodes in the web UI. Then the drill from playbook 02, step 3 should stay `Quorate: Yes` without `pvecm expected 1`.
