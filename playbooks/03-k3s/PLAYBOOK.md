@@ -70,12 +70,12 @@ If you're resuming an earlier run, say so: the agent checks each step's Verify f
 
 ### 1. Check the VMs and the repo
 **Why:** k3s goes onto what playbook 02 built, so first prove the VMs are what the code says and reachable from the container.
-**Actions:** On a new handbook branch, open today's journal entry. In `homelab-infra`, add `tofu/outputs.tf` with an output `vm_ips`, a map of VM name to address taken from the `vms` variable (`{ for k, v in var.vms : k => v.ip }`), then run `tofu apply`, which changes no resources, so scripts read addresses from OpenTofu instead of a second copy. Create `k3s/nodes.conf`, committed, one line per node with its role; the first `server` line is the server that starts the cluster:
+**Actions:** On a new handbook branch, open today's journal entry. If `qm agent <vmid> ping` on the VM's host fails, the VM has no QEMU guest agent (the playbook 02 run of 2026-10-29 built them before the template included it): `ssh debian@<ip> 'sudo apt-get update && sudo apt-get install -y qemu-guest-agent && sudo systemctl start qemu-guest-agent'` on each VM, so `tofu apply` stops waiting 15 minutes for it. In `homelab-infra`, add `tofu/outputs.tf` with an output `vm_ips`, a map of VM name to address taken from the `vms` variable (`{ for k, v in var.vms : k => v.ip }`), then run `tofu apply`, which changes no resources, so scripts read addresses from OpenTofu instead of a second copy. Create `k3s/nodes.conf`, committed, one line per node with its role; the first `server` line is the server that starts the cluster:
 ```
 k3s-01 server
 k3s-02 agent
 ```
-**Verify:** `tofu -chdir=tofu plan` shows no changes. For each VM: `ssh debian@<ip> 'hostname; . /etc/os-release; echo $PRETTY_NAME; nproc; free -h; df -h /; timedatectl show -p NTPSynchronized'` shows Debian 13, 4 CPUs, about 4.4 GB, the disk size from `vms` (80 GB on `k3s-01`, 60 GB on `k3s-02`) and `NTPSynchronized=yes` (etcd needs synchronised clocks). `ssh debian@<k3s-01-ip> 'nc -zv <k3s-02-ip> 22'` succeeds (the VMs see each other across the two Proxmox hosts).
+**Verify:** `tofu -chdir=tofu plan` shows no changes. For each VM: `ssh debian@<ip> 'hostname; . /etc/os-release; echo $PRETTY_NAME; nproc; free -h; df -h /; timedatectl show -p NTPSynchronized'` shows Debian 13, 4 CPUs, about 4.4 GB, the disk size from `vms` (80 GB on `k3s-01`, 60 GB on `k3s-02`) and `NTPSynchronized=yes` (etcd needs synchronised clocks). `ssh debian@<k3s-01-ip> 'nc -zv <k3s-02-ip> 22'` succeeds (the VMs see each other across the two Proxmox hosts). `qm agent 101 ping` on `pve01` and `qm agent 102 ping` on `pve02` return without error.
 **Record:** Journal: versions and free RAM on each VM before k3s.
 
 ### 2. Compressed swap in RAM (zram) and a safety-net swap file
@@ -197,7 +197,7 @@ memorySwap:
 **Verify:** `ci` green on the PR; 🧑 you squash-merge it.
 
 ### 11. Finish
-**Actions:** Close the journal entry (what broke, memory per node, zram compression ratio from `zramctl`, the reboot drill). Fill in `docs/domains/k3s/index.md` (what exists, diagram, links). In the open questions, close "k3s topology" with ADR-0015 and move "Secrets management" to playbook 04 (the cluster token sits in `.env` and the password manager for now). Update the playbook catalog (03 done, with the date). Remind the human to export the session and check it with `grep -cE "sk-or|sk-lf-|PVEAPIToken|K3S_TOKEN=[0-9a-f]|client-key-data|BEGIN OPENSSH"` before sharing. Open the handbook PR.
+**Actions:** Close the journal entry (what broke, memory per node, zram compression ratio from `zramctl`, the reboot drill). Fill in `docs/domains/k3s/index.md` (what exists, diagram, links). In the open questions, close "k3s topology" with ADR-0015 and move "Secrets management" to playbook 04 (the cluster token sits in `.env` and the password manager for now). Update the playbook catalog (03 done, with the date). Remind the human to export the session and check it with `grep -cE 'sk-or-v1-[0-9a-f]{20}|sk-lf-[0-9a-f-]{20}|homelab-infra=[0-9a-f]{8}-|K3S_TOKEN=[0-9a-f]{16}|client-key-data: [A-Za-z0-9]|BEGIN OPENSSH'` (it matches real values only, not commands that mention them)` before sharing. Open the handbook PR.
 **After the session 🧑:** exit OpenCode, then in PowerShell `devpod up $r --recreate --ide none`, copy the SSH key once more with the `docker cp` lines from *Before you start* (it now lands in the `homelab-ssh` volume and stays), and in the new container run `kubectl get nodes` (works without fetching anything) and `ssh -i ~/.ssh/homelab debian@<k3s-01-ip> hostname`. Run `gh auth login` again in the new container.
 
 ## When it's done

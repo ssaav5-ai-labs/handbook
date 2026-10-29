@@ -6,7 +6,7 @@ domain: proxmox
 tags: [proxmox, cluster, quorum, opentofu, cloud-init, backups, infrastructure-as-code]
 status: draft
 created: 2026-10-23
-updated: 2026-10-27
+updated: 2026-10-29
 visibility: public
 reuse: portable
 repo: homelab-infra
@@ -72,7 +72,7 @@ In the container, one at a time: `gh auth login -h github.com -s repo,workflow` 
 - No Proxmox HA (Datacenter → HA stays empty): without quorum, HA would fence (reboot) the surviving node.
 - Don't edit `corosync.conf` for `two_node` mode; it isn't a supported Proxmox setup.
 **If a node is down and you need control on the other:** on the surviving node, `pvecm expected 1`. It lowers the expected votes until the other node rejoins, after which corosync goes back to 2 on its own. Use it only when the other node is really off (never while both run but can't see each other, or both sides may change the same VM).
-**Verify:** `pvecm status` shows `Nodes: 2`, `Expected votes: 2`, `Quorate: Yes`. Optional drill: shut down `pve02`; on `pve01`, `pvecm status` shows `Quorate: No` and starting a VM fails; run `pvecm expected 1`, now it shows `Quorate: Yes`; start `pve02` again and check `Expected votes` is back to 2. If an earlier run set up a QDevice, `pvecm qdevice remove` first.
+**Verify:** `pvecm status` shows `Nodes: 2`, `Expected votes: 2`, `Quorate: Yes`. Optional drill: shut down `pve02`; on `pve01`, `pvecm status` shows `Quorate: No` and starting a VM fails; run `pvecm expected 1`, now it shows `Quorate: Yes`; power `pve02` on again with its power button (Proxmox can't start a node that is off; its Wake-on-LAN menu works only if WoL is enabled in that machine's BIOS) and check `Expected votes` is back to 2. If an earlier run set up a QDevice, `pvecm qdevice remove` first.
 **Record:** `docs/domains/proxmox/runbook-node-down.md` (the rules and the `pvecm expected 1` fix), and the journal (drill result).
 
 ### 4. API access for OpenTofu
@@ -114,7 +114,7 @@ Each disk also has `/mnt/usb-share` (the remaining ~316 GB) exported over NFS fo
 
 ### 6. Debian 13 cloud-init template on each node 🧑
 **Why:** Every VM starts from the same small, cloud-init-ready image. `local-lvm` isn't shared between nodes, so each node gets its own copy of the template.
-**Actions:** The agent prints one script, with the image URL and checksum checked against `https://cloud.debian.org/images/cloud/trixie/latest/` (`SHA512SUMS`), that you run on each node with its own VM ID: `9001` on `pve01`, `9002` on `pve02` (`9003` on a third node later). It downloads and verifies `debian-13-genericcloud-amd64.qcow2`, creates the VM `debian13-cloud` (virtio-scsi-single, the image imported to `local-lvm` as `scsi0`, a cloud-init drive, serial console, QEMU guest agent on) and runs `qm template`.
+**Actions:** The agent prints one script, with the image URL and checksum checked against `https://cloud.debian.org/images/cloud/trixie/latest/` (`SHA512SUMS`), that you run on each node with its own VM ID: `9001` on `pve01`, `9002` on `pve02` (`9003` on a third node later). It downloads and verifies `debian-13-genericcloud-amd64.qcow2`, installs the QEMU guest agent into the image (`apt install -y libguestfs-tools` on the host, then `virt-customize -a <image> --install qemu-guest-agent`; the cloud image doesn't ship it, and without it every `tofu apply` that creates or changes a VM waits 15 minutes for the agent and ends with a warning), creates the VM `debian13-cloud` (virtio-scsi-single, the image imported to `local-lvm` as `scsi0`, a cloud-init drive, serial console, QEMU guest agent on) and runs `qm template`.
 **Verify:** Each node shows its template in the UI; `qm config <id>` shows `scsi0`, `ide2: ...cloudinit` and `agent: 1`.
 **Record:** `reference-proxmox.md` (template IDs, image version, date).
 
@@ -136,11 +136,13 @@ All VMs: CPU type `host`, ballooning off, `scsi0` on `local-lvm` with `discard` 
 ### 8. Backup jobs 🧑
 **Why:** Backups that aren't scheduled don't exist.
 **You do (web UI):** Datacenter → Backup → **Add**, one job per storage:
-- VM 101 → `backup-on-pve02`; VM 102 → `backup-on-pve01`.
+- VM 101 → `backup-on-pve02`; VM 102 → `backup-on-pve01`. Tick the VM in the job's list (Selection mode *Include selected VMs*): **Create** stays greyed out until one is selected.
+- Remove any job left from an earlier run that writes to `usb-backup`, and set `pvesm set usb-backup --prune-backups keep-all=1`: `usb-backup` is the same directory that the other node writes to over NFS, kept so a node can restore the other node's VMs when that node is dead. No job targets it, and it must never prune.
 - All: daily 03:00, mode **Snapshot**, compression ZSTD, retention keep-daily 7, keep-weekly 4.
 Then select each job → **Run now**.
 **Verify:** Each task log ends with `TASK OK`, and each backup storage lists the expected archives.
-**Record:** Runbook: the job settings and a tested restore (restore `k3s-01`'s archive as VM 199 on `pve02`, boot it, delete it; stop `k3s-02` first if `pve02` runs short of RAM).
+**Verify:** also `grep -E '^vzdump|storage|vmid' /etc/pve/jobs.cfg` shows exactly these two jobs.
+**Record:** Runbook: the job settings and a tested restore (restore `k3s-01`'s archive from `usb-backup` on `pve02` as VM 199, boot it, delete it; stop `k3s-02` first if `pve02` runs short of RAM). The VMs use a serial console: open it with **Console → xterm.js** (or `qm terminal 199`) and press Enter for a login prompt; the default noVNC console stops at "starting serial terminal".
 
 ### 9. CI and branch protection for homelab-infra
 **Why:** Same change control as the other repos; infrastructure changes especially go through PRs.
@@ -148,7 +150,7 @@ Then select each job → **Run now**.
 **Verify:** CI green; a direct push to `main` is rejected.
 
 ### 10. Finish
-**Actions:** Close the journal entry (what broke, RAM left on each node per `free -h`, the quorum drill). Remind the human to export the session and check it with `grep -cE "sk-or|sk-lf-|PVEAPIToken|=[0-9a-f-]{36}"` before sharing. Open the handbook PR with references, runbook, ADR-0014 and the open-questions update.
+**Actions:** Close the journal entry (what broke, RAM left on each node per `free -h`, the quorum drill). Remind the human to export the session and check it with `grep -cE 'sk-or-v1-[0-9a-f]{20}|sk-lf-[0-9a-f-]{20}|homelab-infra=[0-9a-f]{8}-'` (it matches real values only; the broader pattern also hits every command that names a variable and every UUID) before sharing. Open the handbook PR with references, runbook, ADR-0014 and the open-questions update.
 
 ## When it's done
 - Docs updated: `docs/domains/proxmox/` (reference-proxmox, reference-hardware, runbook-backup-restore, runbook-node-down), ADR-0014, open questions, journal.

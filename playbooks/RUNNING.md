@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: portable
 created: 2026-10-20
-updated: 2026-10-23
+updated: 2026-10-29
 ---
 
 # How an AI agent runs a playbook
@@ -38,6 +38,7 @@ From there the agent drives. The human answers questions and does the manual ste
 ## Rules
 
 - Never commit secrets, tokens, real public IPs or hostnames. Use placeholders.
+- Never print a file or variable that may hold a secret (`.env`, `*.tfvars`, kubeconfigs, `/etc/rancher/k3s/config.yaml`): anything you print lands in the transcript and goes to the model provider. Check them without showing values (`cut -d= -f1 .env`, `grep -c '^KEY=' .env`), load them with `set -a; . ./.env; set +a`, and never paste a secret into a command line.
 - Never push to `main`; open a PR.
 - If reality differs from the playbook (a UI changed, a command fails), fix the run, then propose an edit to the playbook in the same PR. Playbooks improve every time they run.
 - If a command fails, read the error and diagnose before retrying. Never rerun the same command unchanged.
