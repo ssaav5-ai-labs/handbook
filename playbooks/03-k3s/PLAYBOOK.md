@@ -6,7 +6,7 @@ domain: k3s
 tags: [k3s, kubernetes, etcd, zram, swap, kubeconfig, infrastructure-as-code]
 status: draft
 created: 2026-10-27
-updated: 2026-10-27
+updated: 2026-10-29
 visibility: public
 reuse: portable
 repo: homelab-infra
@@ -94,8 +94,8 @@ swap-priority = 100
 - `/etc/sysctl.d/90-zram.conf` with the usual values for zram: `vm.swappiness = 180`, `vm.page-cluster = 0`, `vm.watermark_boost_factor = 0`, `vm.watermark_scale_factor = 125`.
 - `systemctl daemon-reload`, start `systemd-zram-setup@zram0`, `swapon -a`, `sysctl --system`.
 
-Reboot `k3s-02`, then `k3s-01` (nothing runs on them yet, so this is safe).
-**Verify:** After the reboots, on each VM: `swapon --show` lists `/dev/zram0` with priority 100 and `/swapfile` with priority 10; `zramctl` shows `zstd`; `sysctl vm.swappiness` is 180. Running the script again changes nothing.
+Reboot `k3s-02`, then `k3s-01` (nothing runs on them yet, so this is safe). `ssh debian@<ip> uptime -s` shows the new boot time, which proves the reboot happened.
+**Verify:** After the reboots, on each VM (with `sudo`: over non-interactive SSH, Debian 13 doesn't have `/usr/sbin` on the `PATH`, so plain `zramctl` and `sysctl` are "not found"): `sudo swapon --show` lists `/dev/zram0` with priority 100 and `/swapfile` with priority 10; `sudo zramctl` shows `zstd`; `sudo sysctl vm.swappiness` is 180. Running the script again changes nothing.
 **Record:** ADR-0016 (ask whether it still holds and set it `accepted`), `docs/domains/k3s/reference-k3s.md` (memory section: zram, swap file, sysctls and why).
 
 ### 3. Pin k3s and write its configuration
@@ -123,7 +123,7 @@ kubelet-arg:
 ```
   The install script adds `cluster-init: true` for the first server in `nodes.conf` and `server: https://<first-server-ip>:6443` for every other server. That's the hook for a third node: a new `server` line in `nodes.conf` joins etcd instead of starting a second cluster.
 - `k3s/config/agent.yaml.tmpl`: `server: https://<first-server-ip>:6443`, `token`, `node-ip`, and the same `kubelet-arg` with `kube-reserved=cpu=100m,memory=256Mi` (an agent runs no control plane).
-- `k3s/config/kubelet-swap.yaml`, a kubelet configuration drop-in that lets Burstable pods use swap (Kubernetes' `LimitedSwap`; without it, pods never swap and only the OS and k3s itself benefit from zram):
+- `k3s/config/kubelet-swap.conf`, a kubelet configuration drop-in that lets Burstable pods use swap (Kubernetes' `LimitedSwap`; without it, pods never swap and only the OS and k3s itself benefit from zram):
 ```yaml
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
@@ -131,8 +131,8 @@ failSwapOn: false
 memorySwap:
   swapBehavior: LimitedSwap
 ```
-  Look up in the k3s docs for the pinned version where k3s reads kubelet drop-ins (recent versions use `/var/lib/rancher/k3s/agent/etc/kubelet.conf.d/`, or take `kubelet-arg: config-dir=<dir>`), and use that.
-- `k3s/install.sh <node>`: looks up the node's role in `nodes.conf` and its address in `tofu output -json vm_ips`, renders the config, copies it to `/etc/rancher/k3s/config.yaml` (mode 600) and the drop-in to its directory, then runs the installer **from the pinned tag**, not from `get.k3s.io`: `curl -sfL https://raw.githubusercontent.com/k3s-io/k3s/$K3S_VERSION/install.sh | sudo INSTALL_K3S_VERSION=$K3S_VERSION INSTALL_K3S_EXEC=<server|agent> sh -`. The installer checks the binary's checksum. Running it again with the same version and config is a no-op restart; with a new `K3S_VERSION` it's an upgrade.
+  k3s v1.36 reads kubelet drop-ins from `/var/lib/rancher/k3s/agent/etc/kubelet.conf.d/`, **only files ending in `.conf`**, in name order after its own `00-k3s-defaults.conf`: install it as `99-kubelet-swap.conf`. Check the k3s docs if you pin a different minor version.
+- `k3s/install.sh <node>`: runs **in the dev container** and works on the VM over SSH (an early version ran the installer locally). It looks up the node's role in `nodes.conf` and its address in `tofu output -json vm_ips`, renders the config locally (templates end with a newline, and added lines use `printf`, or `cluster-init: true` gets glued onto the last line), copies it to `/etc/rancher/k3s/config.yaml` (mode 600) and the drop-in to its directory, then runs the installer **from the pinned tag**, not from `get.k3s.io`: `curl -sfL https://raw.githubusercontent.com/k3s-io/k3s/$K3S_VERSION/install.sh | sudo INSTALL_K3S_VERSION=$K3S_VERSION INSTALL_K3S_EXEC=<server|agent> sh -`. The installer checks the binary's checksum. Running it again with the same version and config is a no-op restart; with a new `K3S_VERSION` it's an upgrade.
 
 **Verify:** `shellcheck k3s/*.sh` is clean; `git check-ignore .env` prints `.env`; rendering the templates with a dummy token gives valid YAML (`yq` or `python3 -c 'import yaml,sys; yaml.safe_load(sys.stdin)'`); `git grep -nE '[0-9a-f]{64}'` finds no token.
 **Record:** `reference-k3s.md` (version, config and why each setting), ADR-0015 (ask whether it still holds and set it `accepted`).
@@ -161,7 +161,7 @@ memorySwap:
 - A DaemonSet of a small HTTP echo server (for example `traefik/whoami`) with a Service, so one pod runs on each node.
 - A one-off pod on each node (pinned with `nodeName`) that resolves `whoami.smoke.svc.cluster.local` and fetches it 10 times, plus the pod IP of the echo pod on the **other** node. Both nodes' pods must answer: that's the Flannel VXLAN overlay working between `pve01` and `pve02`.
 - A 100 Mi PVC on `local-path` and a pod that writes and reads a file on it.
-- `k3s/smoke/run.sh` applies it, waits, prints pass/fail per check and deletes the namespace.
+- `k3s/smoke/run.sh` applies it, waits, prints pass/fail per check and deletes the namespace. No `set -e` here: one failing check must not stop the others or skip the cleanup. busybox `nslookup` prints `Address:` (not `Address 1:`).
 
 **Verify:** `k3s/smoke/run.sh` passes every check; `kubectl get ns smoke` afterwards says not found.
 **Record:** `reference-k3s.md` (how to run the smoke test).
@@ -173,7 +173,7 @@ memorySwap:
 - **Agent reboot:** `kubectl drain k3s-02 --ignore-daemonsets --delete-emptydir-data`, then 🧑 reboot `k3s-02` (or `pve02`, one host at a time per [ADR-0013](../../docs/decisions/0013-two-nodes-without-qdevice.md)), then `kubectl uncordon k3s-02`.
 - **Server reboot:** apply the echo DaemonSet from `k3s/smoke/` again, note the pods' restart counts, 🧑 reboot `k3s-01`. While it's down, `kubectl` fails (no control plane, accepted in ADR-0015) but the pod on `k3s-02` keeps running. When `k3s-01` is back, restart counts on `k3s-02` are unchanged. Clean up with `kubectl delete ns smoke`.
 
-**Verify:** Both nodes `Ready` after each reboot, without manual fixes; zram active again after each boot (`swapon --show`).
+**Verify:** Both nodes `Ready` after each reboot, without manual fixes; zram active again after each boot (`sudo swapon --show`).
 **Record:** `docs/domains/k3s/runbook-node-maintenance.md` (drain, reboot one at a time, what to expect while `k3s-01` is down) and `docs/domains/k3s/runbook-etcd-restore.md` (restore a snapshot on `k3s-01` with `k3s server --cluster-reset --cluster-reset-restore-path=<snapshot>` and the original token, from the k3s docs for the pinned version; mark it **untested** unless you choose to practise it now, then rebuild with step 4).
 
 ### 9. Kubeconfig and SSH key that survive container rebuilds
