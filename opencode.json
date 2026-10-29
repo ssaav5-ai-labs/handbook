@@ -14,14 +14,27 @@
   },
   "model": "gateway/code",
   "permission": {
-    "shell": {
+    "bash": {
       "*": "allow",
       "rm *": "ask",
       "git push*": "ask",
       "git reset*": "ask",
       "git clean*": "ask",
       "sudo *": "ask",
-      "docker *": "ask"
+      "docker *": "ask",
+      "cat *.env*": "deny",
+      "cat *tfvars*": "deny",
+      "cat *kube/config*": "deny",
+      "env": "deny",
+      "printenv*": "deny"
+    },
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.tfvars": "deny",
+      "*/.kube/config": "deny",
+      "*/k3s.yaml": "deny"
     }
   },
   "mcp": {
