@@ -17,16 +17,18 @@
     "bash": {
       "*": "allow",
       "rm *": "ask",
-      "git push*": "ask",
-      "git reset*": "ask",
-      "git clean*": "ask",
+      "git push": "ask",
+      "git push *": "ask",
+      "git reset *": "ask",
+      "git clean *": "ask",
       "sudo *": "ask",
       "docker *": "ask",
       "cat *.env*": "deny",
       "cat *tfvars*": "deny",
       "cat *kube/config*": "deny",
       "env": "deny",
-      "printenv*": "deny"
+      "printenv": "deny",
+      "printenv *": "deny"
     },
     "read": {
       "*": "allow",

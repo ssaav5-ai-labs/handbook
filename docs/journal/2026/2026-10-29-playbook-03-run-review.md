@@ -32,3 +32,8 @@ None new.
 
 ## Next
 Confirm the new permissions in a fresh OpenCode session, then playbook 04.
+
+## Update: permission test (same day)
+- In a new session, reading `.env` is refused.
+- `git push --dry-run` still ran without asking: OpenCode 1.19.3 doesn't match `git push*` (no space). The documented form `git push *` (plus a bare `git push`) asks as expected; `git reset` and `git clean` moved to the same form.
+- A test typed into an already open session uses the config that session started with, so test permission changes in a fresh `opencode` session.
