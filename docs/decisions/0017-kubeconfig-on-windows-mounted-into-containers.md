@@ -4,9 +4,9 @@ title: Keep the cluster kubeconfig on Windows and mount it into every dev contai
 description: The k3s kubeconfig lives in %USERPROFILE%\.kube and is bind-mounted into dev containers; the lab SSH key lives in a shared Docker volume.
 domain: workstation
 tags: [workstation, devcontainer, kubeconfig, ssh, k3s]
-status: proposed
+status: accepted
 created: 2026-10-27
-updated: 2026-10-27
+updated: 2026-10-29
 visibility: public
 reuse: portable
 related: [0006-local-repo-layout.md, 0015-k3s-embedded-etcd-server-and-agent.md, ../domains/workstation/index.md, ../../playbooks/03-k3s/PLAYBOOK.md]

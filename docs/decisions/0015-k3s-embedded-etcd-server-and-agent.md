@@ -4,9 +4,9 @@ title: Run k3s with embedded etcd as one server and one agent, installed from pi
 description: k3s-01 is the only server and starts embedded etcd from day one, k3s-02 is an agent, and both are installed by version-pinned scripts and config files in homelab-infra.
 domain: k3s
 tags: [k3s, kubernetes, etcd, topology, installation]
-status: proposed
+status: accepted
 created: 2026-10-27
-updated: 2026-10-27
+updated: 2026-10-29
 visibility: public
 reuse: portable
 related: [0013-two-nodes-without-qdevice.md, 0016-zram-swap-on-k3s-nodes.md, ../domains/k3s/howto-add-server.md, ../../playbooks/03-k3s/PLAYBOOK.md]

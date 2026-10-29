@@ -4,9 +4,9 @@ title: Use zram swap with a small disk swap file on the k3s nodes, and let pods 
 description: Each k3s VM gets zram (ram/2, zstd) as its main swap and a 1 GiB swap file as a last resort, and the kubelet uses LimitedSwap so Burstable pods can swap too.
 domain: k3s
 tags: [k3s, memory, zram, swap, kubelet]
-status: proposed
+status: accepted
 created: 2026-10-27
-updated: 2026-10-27
+updated: 2026-10-29
 visibility: public
 reuse: portable
 related: [0015-k3s-embedded-etcd-server-and-agent.md, ../domains/proxmox/reference-hardware.md, ../../playbooks/03-k3s/PLAYBOOK.md]
