@@ -23,7 +23,7 @@ updated: 2026-10-27
 | Uses for the Raspberry Pi 3s | proxmox | Uptime Kuma for outside-the-cluster checks; DNS later. No QDevice (ADR-0013) | After playbook 05 |
 | AI factory architecture | ai-factory | | After platform is up |
 | Proxmox provisioning | proxmox | OpenTofu (bpg/proxmox) + cloud-init template | [ADR-0014](../decisions/0014-provision-proxmox-vms-opentofu-bpg-provider.md) |
-| k3s topology (nodes, HA, storage) | k3s | Server (embedded etcd) on `pve01`, agent on `pve02`, local-path storage; three servers when a third node joins (proposed [ADR-0015](../decisions/0015-k3s-embedded-etcd-server-and-agent.md)) | Playbook 03 |
+| k3s topology (nodes, HA, storage) | k3s | Server (embedded etcd) on `pve01`, agent on `pve02`, local-path storage; three servers when a third node joins | [ADR-0015](../decisions/0015-k3s-embedded-etcd-server-and-agent.md) |
 | GitOps controller | platform | Argo CD (app-of-apps), core components only | Playbook 04 |
 | Secrets management | platform | SOPS + age; until then the k3s token sits in `homelab-infra/.env` and a password manager | Playbook 04 |
 | Observability stack | platform | VictoriaMetrics + Grafana (fits a 5 GB node); kube-prometheus-stack when there is room | Playbook 05 |

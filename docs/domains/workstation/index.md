@@ -30,6 +30,22 @@ The base devcontainer (`Dockerfile` + `devcontainer.json`, see the [workstation 
 
 Every devcontainer also mounts the handbook at `/knowledge/handbook` (read-write, cached), so any agent in any repo can read ADRs, record journal entries, and follow playbooks without a separate clone.
 
+### Persistent kubeconfig and SSH key
+
+Two more mounts keep cluster access and the lab SSH key across container rebuilds, per [ADR-0017](../../decisions/0017-kubeconfig-on-windows-mounted-into-containers.md):
+
+- **kubeconfig:** `%USERPROFILE%\.kube` is bind-mounted to `/home/vscode/.kube`. Windows bind mounts show every file as world-readable, which is fine for a kubeconfig (kubectl doesn't check permissions).
+- **SSH key:** A named Docker volume `homelab-ssh` mounts to `/home/vscode/.ssh`. The SSH key can't live on a Windows bind mount because `ssh` refuses keys that are world-readable.
+
+The `postCreateCommand` fixes ownership: `sudo chown vscode:vscode /home/vscode/.ssh && chmod 700 /home/vscode/.ssh`.
+
+The key is copied into the volume once after the first container rebuild with the new mount:
+```powershell
+docker cp "$env:USERPROFILE\.ssh\homelab" "${c}:/home/vscode/.ssh/homelab"
+docker exec -u root $c chown vscode:vscode /home/vscode/.ssh/homelab
+docker exec -u root $c chmod 600 /home/vscode/.ssh/homelab
+```
+
 The canonical devcontainer template lives in the [workstation repo](https://github.com/ssaav5-ai-labs/workstation) at `devcontainer/Dockerfile` and `devcontainer/devcontainer.json`.
 
 ## How to create a new repo devcontainer
