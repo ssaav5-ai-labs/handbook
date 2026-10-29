@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: portable
 created: 2026-10-20
-updated: 2026-10-27
+updated: 2026-10-29
 ---
 
 # Decision log
@@ -28,6 +28,8 @@ updated: 2026-10-27
 | [0012](0012-langfuse-cloud-until-capacity.md) | Langfuse Cloud (EU, free tier) until the lab can host Langfuse | ai-stack | accepted |
 | [0013](0013-two-nodes-without-qdevice.md) | Two Proxmox nodes without a QDevice until a third node is chosen | proxmox | accepted |
 | [0014](0014-provision-proxmox-vms-opentofu-bpg-provider.md) | Provision Proxmox VMs with OpenTofu (bpg/proxmox) and a cloud-init template | proxmox | proposed |
-| [0015](0015-k3s-embedded-etcd-server-and-agent.md) | k3s with embedded etcd: one server and one agent, pinned install scripts | k3s | proposed |
-| [0016](0016-zram-swap-on-k3s-nodes.md) | zram swap plus a small swap file on k3s nodes, `LimitedSwap` for pods | k3s | proposed |
-| [0017](0017-kubeconfig-on-windows-mounted-into-containers.md) | Kubeconfig on Windows mounted into dev containers; SSH key in a Docker volume | workstation | proposed |
+| [0015](0015-k3s-embedded-etcd-server-and-agent.md) | k3s with embedded etcd: one server and one agent, pinned install scripts | k3s | accepted |
+| [0016](0016-zram-swap-on-k3s-nodes.md) | zram swap plus a small swap file on k3s nodes, `LimitedSwap` for pods | k3s | accepted |
+| [0017](0017-kubeconfig-on-windows-mounted-into-containers.md) | Kubeconfig on Windows mounted into dev containers; SSH key in a Docker volume | workstation | accepted |
+| [0019](0019-gitops-with-argo-cd-app-of-apps.md) | Slim, self-managed Argo CD with app-of-apps, from `homelab-gitops` | platform | proposed |
+| [0020](0020-secrets-in-git-with-sops-age-ksops.md) | Secrets in Git with SOPS + age, decrypted by KSOPS in Argo CD | platform | proposed |

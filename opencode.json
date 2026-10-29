@@ -26,6 +26,15 @@
       "cat *.env*": "deny",
       "cat *tfvars*": "deny",
       "cat *kube/config*": "deny",
+      "cat *keys.txt*": "deny",
+      "cat *sops-age*": "deny",
+      "sops decrypt *": "deny",
+      "sops -d *": "deny",
+      "sops --decrypt *": "deny",
+      "kubectl get secret *": "ask",
+      "kubectl get secrets *": "ask",
+      "kubectl * get secret *": "ask",
+      "kubectl * get secrets *": "ask",
       "env": "deny",
       "printenv": "deny",
       "printenv *": "deny"
@@ -36,7 +45,9 @@
       "*.env.*": "deny",
       "*.tfvars": "deny",
       "*/.kube/config": "deny",
-      "*/k3s.yaml": "deny"
+      "*/k3s.yaml": "deny",
+      "*keys.txt": "deny",
+      "*/.sops-age/*": "deny"
     }
   },
   "mcp": {
