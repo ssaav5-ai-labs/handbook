@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: lab-specific
 created: 2026-10-20
-updated: 2026-10-27
+updated: 2026-10-29
 ---
 
 # Open questions
@@ -24,8 +24,9 @@ updated: 2026-10-27
 | AI factory architecture | ai-factory | | After platform is up |
 | Proxmox provisioning | proxmox | OpenTofu (bpg/proxmox) + cloud-init template | [ADR-0014](../decisions/0014-provision-proxmox-vms-opentofu-bpg-provider.md) |
 | k3s topology (nodes, HA, storage) | k3s | Server (embedded etcd) on `pve01`, agent on `pve02`, local-path storage; three servers when a third node joins | [ADR-0015](../decisions/0015-k3s-embedded-etcd-server-and-agent.md) |
-| GitOps controller | platform | Argo CD (app-of-apps), core components only | Playbook 04 |
-| Secrets management | platform | SOPS + age; until then the k3s token sits in `homelab-infra/.env` and a password manager | Playbook 04 |
+| GitOps controller | platform | Argo CD, slim and self-managed, app-of-apps from `homelab-gitops` | [ADR-0019](../decisions/0019-gitops-with-argo-cd-app-of-apps.md) (proposed), playbook 04 |
+| Secrets management | platform | SOPS + age in Git, KSOPS in Argo CD; age key in the password manager | [ADR-0020](../decisions/0020-secrets-in-git-with-sops-age-ksops.md) (proposed), playbook 04 |
+| Move `homelab-infra/.env` (k3s token) into SOPS | platform | Yes, with the lab age key, once playbook 04 is done | After playbook 04 |
 | Observability stack | platform | VictoriaMetrics + Grafana (fits a 5 GB node); kube-prometheus-stack when there is room | Playbook 05 |
 | Site generator after MkDocs Material's maintenance ends (Nov 5, 2026) | meta | Stay on MkDocs 1.6.1 (pinned); evaluate Zensical | Zensical blog/plugin parity |
 | Third Proxmox node | proxmox | 16 GB or more, wired Ethernet; Chromebox (16 GB) among the candidates ([add a node](../domains/proxmox/howto-add-node.md)) | When Shawn picks one |
