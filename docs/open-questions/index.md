@@ -23,9 +23,9 @@ updated: 2026-10-27
 | Uses for the Raspberry Pi 3s | proxmox | Uptime Kuma for outside-the-cluster checks; DNS later. No QDevice (ADR-0013) | After playbook 05 |
 | AI factory architecture | ai-factory | | After platform is up |
 | Proxmox provisioning | proxmox | OpenTofu (bpg/proxmox) + cloud-init template | [ADR-0014](../decisions/0014-provision-proxmox-vms-opentofu-bpg-provider.md) |
-| k3s topology (nodes, HA, storage) | k3s | Server (embedded etcd) on `pve01`, agent on `pve02`; three servers when a third node joins ([lab hardware](../domains/proxmox/reference-hardware.md)) | Playbook 03 |
+| k3s topology (nodes, HA, storage) | k3s | Server (embedded etcd) on `pve01`, agent on `pve02`, local-path storage; three servers when a third node joins (proposed [ADR-0015](../decisions/0015-k3s-embedded-etcd-server-and-agent.md)) | Playbook 03 |
 | GitOps controller | platform | Argo CD (app-of-apps), core components only | Playbook 04 |
-| Secrets management | platform | SOPS + age | Playbook 03-04 |
+| Secrets management | platform | SOPS + age; until then the k3s token sits in `homelab-infra/.env` and a password manager | Playbook 04 |
 | Observability stack | platform | VictoriaMetrics + Grafana (fits a 5 GB node); kube-prometheus-stack when there is room | Playbook 05 |
 | Site generator after MkDocs Material's maintenance ends (Nov 5, 2026) | meta | Stay on MkDocs 1.6.1 (pinned); evaluate Zensical | Zensical blog/plugin parity |
 | Third Proxmox node | proxmox | 16 GB or more, wired Ethernet; Chromebox (16 GB) among the candidates ([add a node](../domains/proxmox/howto-add-node.md)) | When Shawn picks one |
