@@ -100,13 +100,16 @@ chmod 600 .env; unset T
 | `backup-on-pve01` | `pve01` | `pve02` (and a third node later) |
 | `backup-on-pve02` | `pve02` | `pve01` |
 
+Each disk also has `/mnt/usb-share` (the remaining ~316 GB) exported over NFS for future shared data; it is not added as Proxmox storage yet. Each node's `usb-backup` local directory storage covers its own VMs.
+
 **Actions:** The agent prints host-shell commands for each disk node and **waits for your explicit "format it"** before you run the destructive part:
-- Confirm the disk by size and model with `lsblk`, create one ext4 partition, mount it by UUID at `/mnt/usb-backup` with `nofail` in `/etc/fstab`.
-- Share it over NFS to the nodes that use it only (`nfs-kernel-server`, one `/etc/exports` line per using node's address, `no_root_squash` for those addresses only, since Proxmox writes backups as root).
+- Confirm the disk by size and model with `lsblk`, create **two** ext4 partitions (~600 GB for `/mnt/usb-backup`, the rest for `/mnt/usb-share`), mount each by UUID with `nofail` in `/etc/fstab`.
+- Add `usb-backup` as a local directory storage on each node for its own VMs: `pvesm add dir usb-backup --path /mnt/usb-backup --content backup --is_mountpoint yes`. `/mnt/usb-share` is exported over NFS but not added as Proxmox storage yet.
+- Share both mount points over NFS to the other node only (`nfs-kernel-server`, one `/etc/exports` line per export per using node's address, `no_root_squash` since Proxmox writes backups as root).
 - Add it as cluster storage restricted to those nodes: `pvesm add nfs backup-on-pve02 --server <pve02-ip> --export /mnt/usb-backup --content backup --nodes pve01`, and `backup-on-pve01 ... --nodes pve02`.
 - **When a third node joins:** add its address to the export on `pve01` (`exportfs -ra`), then `pvesm set backup-on-pve01 --nodes pve02,<new-node>`.
 
-**Verify:** `pvesm status` on each node lists its backup target as active; after a reboot of a disk node, its mount and export come back on their own.
+**Verify:** `pvesm status` on each node lists `usb-backup` and its cross-node backup target as active; after a reboot of a disk node, its mount and export come back on their own.
 **Record:** `reference-proxmox.md` (storage and why cross-node), and a runbook `docs/domains/proxmox/runbook-backup-restore.md`.
 
 ### 6. Debian 13 cloud-init template on each node 🧑
