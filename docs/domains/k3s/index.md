@@ -12,7 +12,7 @@ updated: 2026-10-29
 
 # K3s
 
-A two-node k3s cluster on the VMs from playbook 02, installed by [playbook 03](../../playbooks/03-k3s/PLAYBOOK.md).
+A two-node k3s cluster on the VMs from playbook 02, installed by [playbook 03](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/03-k3s/PLAYBOOK.md).
 
 ```
 pve01                         pve02
@@ -45,7 +45,6 @@ laptop: dev container ── kubectl (kubeconfig from %USERPROFILE%\.kube)
 | Page | What | 
 |---|---|
 | [reference-k3s.md](reference-k3s.md) | Versions, config, memory, smoke test |
-| [install-verify.md](install-verify.md) | What to check after an install or upgrade (coming soon) |
 | [runbook-node-maintenance.md](runbook-node-maintenance.md) | Drain, reboot one at a time, what happens while k3s-01 is down |
 | [runbook-etcd-restore.md](runbook-etcd-restore.md) | Restore an etcd snapshot (UNTESTED) |
 | [howto-add-server.md](howto-add-server.md) | Grow to three servers when a third Proxmox node joins |
