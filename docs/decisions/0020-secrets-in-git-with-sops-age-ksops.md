@@ -4,7 +4,7 @@ title: Keep secrets in Git, encrypted with SOPS and age, decrypted by KSOPS in A
 description: Secrets are committed as SOPS-encrypted files (values only) for one lab age key; Argo CD's repo server decrypts them with KSOPS while rendering; the private key lives in a password manager, a Windows folder mounted into dev containers, and one cluster Secret.
 domain: platform
 tags: [secrets, sops, age, ksops, argocd, gitops]
-status: proposed
+status: accepted
 created: 2026-10-29
 updated: 2026-10-29
 visibility: public

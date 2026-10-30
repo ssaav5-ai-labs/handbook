@@ -4,7 +4,7 @@ title: Run the cluster from Git with a slim, self-managed Argo CD (app-of-apps)
 description: Argo CD is installed once with Helm, then manages itself and every other app from the homelab-gitops repo through a root app; Dex, notifications and ApplicationSet are off, and k3s keeps its bundled components.
 domain: platform
 tags: [argocd, gitops, helm, app-of-apps, k3s]
-status: proposed
+status: accepted
 created: 2026-10-29
 updated: 2026-10-29
 visibility: public
@@ -32,7 +32,7 @@ Option 4. Helm installs Argo CD once (`bootstrap/install.sh`); a root Applicatio
 ## Consequences
 - After the takeover, nobody runs `helm` against the cluster; changes are PRs. An Argo CD upgrade is a version bump in two places that CI keeps equal (`bootstrap/versions.env` and `apps/argocd.yaml`).
 - Rebuilding is: k3s, age key, `bootstrap/install.sh` (see `runbook-rebuild-argocd.md`).
-- Argo CD costs about half a gigabyte; the playbook records the real number.
+- Argo CD costs about 129 MiB of RAM steady-state (controller ~36 MiB, repo-server ~25 MiB, server ~59 MiB, Redis ~9 MiB).
 - Up to 3 minutes between a merge and the cluster changing; a "Refresh" in the UI is immediate.
 - Flux would have been lighter; if memory gets tight before the third node arrives, revisit.
 

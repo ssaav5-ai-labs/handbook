@@ -24,18 +24,21 @@ The base devcontainer (`Dockerfile` + `devcontainer.json`, see the [workstation 
 | kubectl | latest stable | k3s cluster management |
 | helm | latest stable | Helm chart operations |
 | OpenTofu | 1.11.0 | Infrastructure as code (open-source Terraform fork) |
-| sops | 3.10.2 | Encrypted secrets in git (AGE backend) |
-| age | 1.2.1 | SOPS encryption backend |
+| sops | 3.13.3 | Encrypted secrets in git (AGE backend) |
+| age | 1.3.2 | SOPS encryption backend |
 | k9s | 0.40.10 | Terminal-based cluster dashboard |
+| argocd | 3.5.6 | Argo CD CLI (matches server version) |
+| kubeconform | 0.8.0 | Kubernetes manifest validation (matches CI) |
 
 Every devcontainer also mounts the handbook at `/knowledge/handbook` (read-write, cached), so any agent in any repo can read ADRs, record journal entries, and follow playbooks without a separate clone.
 
-### Persistent kubeconfig and SSH key
+### Persistent kubeconfig, SSH key and age key
 
-Two more mounts keep cluster access and the lab SSH key across container rebuilds, per [ADR-0017](../../decisions/0017-kubeconfig-on-windows-mounted-into-containers.md):
+Three mounts keep cluster access, the lab SSH key and the SOPS age key across container rebuilds, per [ADR-0017](../../decisions/0017-kubeconfig-on-windows-mounted-into-containers.md) and [ADR-0020](../../decisions/0020-secrets-in-git-with-sops-age-ksops.md):
 
 - **kubeconfig:** `%USERPROFILE%\.kube` is bind-mounted to `/home/vscode/.kube`. Windows bind mounts show every file as world-readable, which is fine for a kubeconfig (kubectl doesn't check permissions).
 - **SSH key:** A named Docker volume `homelab-ssh` mounts to `/home/vscode/.ssh`. The SSH key can't live on a Windows bind mount because `ssh` refuses keys that are world-readable.
+- **Age key:** `%USERPROFILE%\.sops-age` is bind-mounted to `/home/vscode/.sops-age`. SOPS and age don't check file permissions, so the bind mount is fine. The path is set in `SOPS_AGE_KEY_FILE=/home/vscode/.sops-age/keys.txt`. The key is created once by `age-keygen` and copied to the password manager.
 
 The `postCreateCommand` fixes ownership: `sudo chown vscode:vscode /home/vscode/.ssh && chmod 700 /home/vscode/.ssh`.
 
