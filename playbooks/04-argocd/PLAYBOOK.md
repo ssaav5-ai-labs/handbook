@@ -6,7 +6,7 @@ domain: platform
 tags: [argocd, gitops, helm, app-of-apps, sops, age, ksops, secrets]
 status: draft
 created: 2026-10-29
-updated: 2026-10-29
+updated: 2026-10-30
 visibility: public
 reuse: portable
 repo: homelab-gitops
@@ -24,7 +24,7 @@ blog: candidate
 # Run the cluster from Git with Argo CD, secrets encrypted with SOPS and age
 
 ## What you'll have at the end
-A public `homelab-gitops` repo that is the source of truth for everything running on the k3s cluster from now on. Argo CD runs in the `argocd` namespace, slimmed down to about half a gigabyte of RAM, with its web UI behind the k3s Traefik ingress. Helm installs it once; after that Argo CD manages itself from Git (app-of-apps, [ADR-0019](../../docs/decisions/0019-gitops-with-argo-cd-app-of-apps.md)), so an upgrade is a pull request. Secrets live in the same repo, encrypted with SOPS and an age key, and Argo CD decrypts them while it renders manifests (KSOPS, [ADR-0020](../../docs/decisions/0020-secrets-in-git-with-sops-age-ksops.md)). A harmless canary secret proves the whole path works, and two drills prove Git wins over hand edits.
+A public `homelab-gitops` repo that is the source of truth for everything running on the k3s cluster from now on. Argo CD runs in the `argocd` namespace, slimmed down to well under half a gigabyte of RAM (about 130 MiB idle on the first run), with its web UI behind the k3s Traefik ingress. Helm installs it once; after that Argo CD manages itself from Git (app-of-apps, [ADR-0019](../../docs/decisions/0019-gitops-with-argo-cd-app-of-apps.md)), so an upgrade is a pull request. Secrets live in the same repo, encrypted with SOPS and an age key, and Argo CD decrypts them while it renders manifests (KSOPS, [ADR-0020](../../docs/decisions/0020-secrets-in-git-with-sops-age-ksops.md)). A harmless canary secret proves the whole path works, and two drills prove Git wins over hand edits.
 
 ```
 GitHub: ssaav5-ai-labs/homelab-gitops (main, PRs + ci)
@@ -79,7 +79,7 @@ If you're resuming an earlier run, say so: the agent checks each step's Verify f
 
 ### 1. Create the homelab-gitops repo
 **Why:** Everything the cluster runs is declared in one repo, separate from the infrastructure that builds the cluster (`homelab-infra`). Argo CD reads it anonymously, so it's public, and nothing in it may be readable unless it's meant to be public.
-**Actions:** On a new handbook branch, open today's journal entry. In `homelab-gitops`: `git init -b main` (identity from playbook 00), then `README.md` (what the repo is, the layout below, a link to the handbook), `AGENTS.md` (pointing to the handbook and `RUNNING.md`, like `homelab-infra`), and a `.gitignore` with `.env`, `.runs/`, `keys.txt`, `*.agekey` and `*.dec.yaml`. Create `ssaav5-ai-labs/homelab-gitops` (public) with `gh repo create --source . --push`. The layout this playbook builds:
+**Actions:** On a new handbook branch, open today's journal entry. In `homelab-gitops`: `git config --global pull.ff only`, set `git config --global user.name`/`user.email` if a new container lacks them (the identity from playbook 00), then `git init -b main`, then `README.md` (what the repo is, the layout below, a link to the handbook), `AGENTS.md` (pointing to the handbook and `RUNNING.md`, like `homelab-infra`), and a `.gitignore` with `.env`, `.runs/`, `keys.txt`, `*.agekey` and `*.dec.yaml`. Create `ssaav5-ai-labs/homelab-gitops` (public) with `gh repo create --source . --push`. The layout this playbook builds:
 ```
 bootstrap/   versions.env, argocd/values.yaml, install.sh, root.yaml, project.yaml
 apps/        one Argo CD Application per file (the root app watches this folder)
@@ -138,9 +138,9 @@ creation_rules:
 2. `kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -`.
 3. Create the `sops-age` Secret only if it's missing: `kubectl -n argocd get secret sops-age >/dev/null 2>&1 || kubectl -n argocd create secret generic sops-age --from-file=keys.txt="$SOPS_AGE_KEY_FILE"`. (Changing the key later is a deliberate step in the how-to, not something a rerun does.)
 4. `helm repo add argo https://argoproj.github.io/argo-helm --force-update`, then `helm upgrade --install argocd argo/argo-cd --version "$ARGOCD_CHART_VERSION" -n argocd -f bootstrap/argocd/values.yaml --wait --timeout 10m`.
-5. Apply `bootstrap/project.yaml` and `bootstrap/root.yaml` **only if they exist and `origin/main` contains them** (they come in step 7; until then the script stops after Helm).
+5. `git fetch origin main`, then apply `bootstrap/project.yaml` and `bootstrap/root.yaml` **only if they exist and `origin/main` contains them** (they come in step 7; until then the script stops after Helm).
 
-Show the script, then run it. Then check memory and adjust the `resources` in the values if a pod's real use (`kubectl top pods -n argocd`) is far from its request; rerun the script after any change.
+Show the script, then run it. Then check memory and adjust the `resources` in the values if a pod's real use (`kubectl top pods -n argocd`) is far from its request; rerun the script after any change. Metrics for a new pod appear about a minute after it starts (`NotFound` from `kubectl top` before that). The first run measured controller 36 Mi, repo server 25 Mi, server 59 Mi, Redis 9 Mi at idle; the controller and repo server grow with the number of apps, so keep their requests above that.
 **Verify:** `kubectl -n argocd get pods` shows controller, repo server, server and Redis `Running` (and no Dex or notifications pod); `kubectl -n argocd logs deploy/argocd-repo-server -c install-ksops` shows the init container finished; `kubectl -n argocd exec deploy/argocd-repo-server -- ksops --help` prints its usage (the plugin is in place); `kubectl -n argocd describe secret sops-age` shows one key `keys.txt` with a byte count (describe never shows values); `kubectl top pods -n argocd` adds up to well under 1 GiB; running the script a second time changes nothing (`helm history argocd -n argocd` gains a revision but `kubectl -n argocd get pods` shows no restarts).
 **Record:** Journal: memory per pod and per node (`kubectl top nodes`) before and after. `reference-argocd.md`: final resources.
 
@@ -157,10 +157,11 @@ Show the script, then run it. Then check memory and adjust the `resources` in th
 
 ### 6. CI and branch protection
 **Why:** From step 7 on, merging to `main` changes the cluster. So `main` gets the same protection as the other repos, plus two checks that matter for GitOps in a public repo: no unencrypted secret ever lands, and the bootstrap pin can't drift from what Argo CD runs.
+**Git workflow from here on:** every change is a branch created **before** the commit (`git checkout -b <name>`, then commit), and after each squash-merge `git checkout main && git pull` (fast-forward only, set in step 1). A commit made on local `main` diverges from the squashed one; the first run needed `git reset --hard origin/main` to recover.
 **Actions:**
-- `scripts/check-secrets.sh`: every `*.enc.yaml` has a top-level `sops:` block and every value under `data`/`stringData` starts with `ENC[`; no other YAML file contains `kind: Secret` (Argo CD and KSOPS generate the real ones). Exit non-zero with the file name on failure.
+- `scripts/check-secrets.sh`: every `*.enc.yaml` has a top-level `sops:` block and every value under `data`/`stringData` starts with `ENC[` (search the whole file: SOPS writes the `sops:` block at the **end**, so `head` misses it); no other YAML file contains `kind: Secret` (Argo CD and KSOPS generate the real ones). Exit non-zero with the file name on failure.
 - `scripts/check-versions.sh`: `ARGOCD_CHART_VERSION` from `bootstrap/versions.env` equals the chart `targetRevision` in `apps/argocd.yaml` (once it exists), and the `viaductoss/ksops` tag in the values equals `KSOPS_VERSION`.
-- `.github/workflows/ci.yml`, one job `ci` like `homelab-infra`'s: pinned gitleaks CLI; `shellcheck` (pinned) over `bootstrap/*.sh scripts/*.sh`; both scripts above; YAML parse of every `*.yaml`; `helm template` of the pinned chart with the values, piped into `kubeconform` (pinned, `-strict -summary`, with `-ignore-missing-schemas` only for Argo CD's own CRDs, or with the CRDs-catalog schema location for `argoproj.io` kinds).
+- `.github/workflows/ci.yml`, one job `ci` like `homelab-infra`'s: pinned gitleaks CLI; `shellcheck -x` (pinned; `-x` follows the sourced `versions.env`) over `bootstrap/*.sh scripts/*.sh`; both scripts above; YAML parse of every `*.yaml`; `helm template` of the pinned chart with the values, piped into `kubeconform` (pinned, `-strict -summary`, with `-ignore-missing-schemas`: the CRDs catalog had no schemas for this Argo CD version's `argoproj.io` kinds on the first run).
 - Enable Dependabot alerts, secret scanning and push protection on the repo (repo Settings → Advanced Security, or `gh api` as in playbook 01). Open a PR with everything so far. Once `ci` is green and merged, add the `protect-main` ruleset with `ci` required ([how-to](../../docs/domains/github/howto-rulesets.md), with this repo's name).
 
 **Verify:** On a throwaway branch, commit a plain `kind: Secret` file and see `ci` fail on it, then delete the branch without merging. `ci` green on the PR; 🧑 you squash-merge it; `gh api repos/ssaav5-ai-labs/homelab-gitops/rulesets --jq '.[].name'` lists `protect-main`.
@@ -187,6 +188,7 @@ Show the script, then run it. Then check memory and adjust the `resources` in th
 
 How you add a **real** secret later (for `howto-secrets-sops.md`): you, in your own terminal, run `sops edit platform/<app>/<name>.enc.yaml` (SOPS opens an editor on the decrypted file and re-encrypts when you save), then commit. The agent writes the generator, kustomization and app, and leaves a placeholder file for you to fill; it never decrypts (`sops decrypt` is denied in `opencode.json`).
 
+**A new app appears only when `root` next polls Git (up to 3 minutes after the merge).** To skip the wait: `kubectl -n argocd annotate application root argocd.argoproj.io/refresh=normal --overwrite` (or **Refresh** on `root` in the UI). Until then, `kubectl -n sops-canary ...` says the namespace is not found; that's not a failure.
 **Verify:** `sops-canary` is `Synced` and `Healthy`; `kubectl -n sops-canary describe secret canary` shows key `canary` with `10 bytes`; `git show HEAD:platform/sops-canary/secret.enc.yaml | grep -c 'ENC\['` is at least 1 and `grep -c sops-works` on it is 0. 🧑 In your own terminal, `kubectl -n sops-canary get secret canary -o jsonpath='{.data.canary}' | base64 -d; echo` prints `sops-works`.
 **Record:** `howto-secrets-sops.md` (final), journal.
 
@@ -195,7 +197,7 @@ How you add a **real** secret later (for `howto-secrets-sops.md`): you, in your 
 **Actions:**
 - **Deleted resource:** `kubectl -n sops-canary delete secret canary`; within a minute, `kubectl -n sops-canary get secret canary` shows it back (a new `AGE`).
 - **Hand edit:** `kubectl -n argocd scale deploy argocd-server --replicas=0`; Argo CD sets it back to 1 within a minute (self-heal on the `argocd` app), and the UI comes back.
-- **Change through Git:** in a PR, change the canary value to `sops-works-2` (🧑 with `sops edit` in your terminal, since the file is encrypted), merge, and wait up to 3 minutes: `describe` shows `12 bytes`.
+- **Change through Git:** 🧑 in your own terminal: `git checkout main && git pull`, then `EDITOR=nano sops edit platform/sops-canary/secret.enc.yaml`, change the value to `sops-works-2`, save (Ctrl+O, Enter) and exit (Ctrl+X). Then the agent creates the branch, commits the file, opens the PR (both shells share the repo folder); 🧑 merge, and wait up to 3 minutes: `describe` shows `12 bytes`.
 - **Node reboot:** `kubectl drain k3s-02 --ignore-daemonsets --delete-emptydir-data`, 🧑 reboot `k3s-02`, `kubectl uncordon k3s-02`; all apps return to `Synced`/`Healthy` without help.
 
 **Verify:** Each drill ends with every application `Synced` and `Healthy`.
@@ -212,7 +214,7 @@ How you add a **real** secret later (for `howto-secrets-sops.md`): you, in your 
 **Record:** Journal.
 
 ### 11. Finish
-**Actions:** Close the journal entry (what broke, Argo CD memory per pod and per node, how long a merge takes to reach the cluster, the drills). Fill in `docs/domains/platform/index.md` (what exists, the diagram from this playbook, links to `reference-argocd`, `howto-secrets-sops`, `runbook-rebuild-argocd`, ADRs 0019 and 0020). ADR-0019: ask whether it still holds and set it `accepted`. In the open questions, close "GitOps controller" and "Secrets management" with ADR-0019 and ADR-0020. Update the playbook catalog (04 done, with the date). Remind the human to export the session and check it with `grep -cE 'sk-or-v1-[0-9a-f]{20}|sk-lf-[0-9a-f-]{20}|homelab-infra=[0-9a-f]{8}-|K3S_TOKEN=[0-9a-f]{16}|client-key-data: [A-Za-z0-9]|BEGIN OPENSSH|AGE-SECRET-KEY-1[0-9A-Z]{20}'` (real values only) before sharing. Open the handbook PR.
+**Actions:** Close the journal entry (what broke, Argo CD memory per pod and per node, how long a merge takes to reach the cluster, the drills). Fill in `docs/domains/platform/index.md` (what exists, the diagram from this playbook, links to `reference-argocd`, `howto-secrets-sops`, `runbook-rebuild-argocd`, ADRs 0019 and 0020). ADR-0019: ask whether it still holds and set it `accepted`. In the open questions, close "GitOps controller" and "Secrets management" with ADR-0019 and ADR-0020. Update the playbook catalog (04 done, with the date). Remind the human to export the session and check it with `grep -cE 'sk-or-v1-[0-9a-f]{20}|sk-lf-[0-9a-f-]{20}|homelab-infra=[0-9a-f]{8}-|K3S_TOKEN=[0-9a-f]{16}|client-key-data: [A-Za-z0-9]|BEGIN OPENSSH PRIVATE KEY-----.{0,4}b3Bl|AGE-SECRET-KEY-1[0-9A-Z]{20}'` (real values only; a plain `BEGIN OPENSSH` matched the playbook's own text 5 times on the first run) before sharing. Open the handbook PR.
 **After the session 🧑:** exit OpenCode, then in PowerShell `devpod up $r --recreate --ide none` and open a shell in the new container (the `docker ps` and `docker exec` lines from *Before you start*). There: `gh auth login` again, then `echo $SOPS_AGE_KEY_FILE` and `age-keygen -y "$SOPS_AGE_KEY_FILE"` (prints the public key: the key survived), `argocd version --client`, and `kubectl -n argocd get applications`.
 
 ## When it's done
