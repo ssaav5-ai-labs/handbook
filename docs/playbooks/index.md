@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: portable
 created: 2026-10-20
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Playbook catalog
@@ -21,7 +21,7 @@ Each playbook is a few manual steps plus one prompt. See [how the agent runs the
 | 02 | [Two-node Proxmox cluster and the k3s VMs](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/02-proxmox/PLAYBOOK.md) | homelab-infra | 01 | done |
 | 03 | [k3s cluster: server + agent, zram; three servers when a third node joins](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/03-k3s/PLAYBOOK.md) | homelab-infra | 02 | done 2026-10-29 |
 | 04 | [Argo CD from Git (app-of-apps), secrets with SOPS + age](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/04-argocd/PLAYBOOK.md) | homelab-gitops | 03 | done 2026-10-29 |
-| 05 | Monitoring; move the gateway to the cluster; traces to Langfuse Cloud | homelab-gitops | 04 | planned |
+| 05 | [Monitoring with Grafana Cloud, the LLM gateway on k3s, traces to Langfuse Cloud](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/05-monitoring-gateway/PLAYBOOK.md) | homelab-gitops | 04 | ready |
 | 06 | Hermes on k3s (sandboxed) | homelab-gitops | 05 | planned |
 | 07 | SRE management agents (CrewAI over MCP tools) | ai-factory | 05 | planned |
 | 08 | AI dev factory | ai-factory | 05 | planned |
