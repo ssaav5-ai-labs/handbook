@@ -28,7 +28,7 @@ Inventory taken 2026-10-23, updated 2026-10-27. Addresses and serial numbers sta
 
 ## What fits
 - **k3s:** one VM per node, 4 vCPU and 4.5 GB each: the server (embedded etcd, so more servers can join later) on `pve01`, an agent on `pve02`. About 2 GB stays on each host for Proxmox. Apps survive losing `pve02`; losing `pve01` stops cluster changes until it's back.
-- **On the cluster (about 9 GB):** Argo CD (core components), light monitoring (VictoriaMetrics + Grafana), the LLM gateway, Hermes, CrewAI agents, and Backstage, which makes it tight. Zram in the VMs adds some headroom.
+- **On the cluster (about 9 GB):** Argo CD (core components), monitoring collectors (Grafana Alloy, sending to Grafana Cloud, ADR-0021), the LLM gateway, Hermes, CrewAI agents, and Backstage, which makes it tight. Zram in the VMs adds some headroom.
 - **Langfuse:** Langfuse Cloud (ADR-0012).
 
 ## Upgrade path
