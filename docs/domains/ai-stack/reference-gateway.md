@@ -8,7 +8,7 @@ status: active
 visibility: public
 reuse: portable
 created: 2026-10-22
-updated: 2026-10-22
+updated: 2026-11-03
 related: [index.md, ../../decisions/0008-vendor-neutral-ai-stack.md]
 blog: none
 ---
@@ -23,11 +23,18 @@ One endpoint for every agent and harness: a LiteLLM proxy container in front of 
 |---|---|
 | URL from Windows | `http://localhost:4000` |
 | URL from containers | `http://host.docker.internal:4000` (env `LLM_GATEWAY_URL`) |
+| URL on the LAN | `http://llm.192.168.86.211.nip.io/v1` (Traefik, HTTP) |
+| URL in-cluster | `http://litellm.llm-gateway.svc:4000` |
 | Auth | `Authorization: Bearer $LITELLM_MASTER_KEY` (env `LLM_GATEWAY_KEY` in containers) |
-| Upstream key | `OPENROUTER_API_KEY`, only inside the gateway's `.env` |
-| Source of truth | `...\github.com\ssaav5-ai-labs\workstation\gateway\` (compose.yaml + config.yaml) |
+| Upstream key | `OPENROUTER_API_KEY`, only in SOPS (`platform/llm-gateway/secret.enc.yaml`) |
+| Source of truth | `homelab-gitops` → `platform/llm-gateway/` (config.yaml + secret.enc.yaml) |
 
-The master key is generated once with a random 32-byte hex value and kept in `gateway/.env` (git-ignored). Container-side env vars (`LLM_GATEWAY_URL`, `LLM_GATEWAY_KEY`) are set with `setx` on the Windows side so every new workspace inherits them.
+The gateway now runs on the cluster (LiteLLM `v1.106.6`, one replica, ~551 Mi) as plain manifests deployed
+by Argo CD; the laptop `workstation/gateway/compose.yaml` is the **fallback** for when the cluster is down.
+Config lives in Git (`platform/llm-gateway/config.yaml`, no secret), keys live in SOPS
+(`secret.enc.yaml`). The master key is a random 32-byte hex value; container-side env vars
+(`LLM_GATEWAY_URL`, `LLM_GATEWAY_KEY`) are set with `setx` on the Windows side so every new workspace
+inherits them. `/metrics/` is unauthenticated but only reachable in-cluster (the Ingress path is `/v1`).
 
 ## Aliases (chosen 2026-10-22)
 
@@ -46,7 +53,8 @@ Prices are OpenRouter list prices at time of choice; re-check before swapping.
 
 ## Operations
 
-- Image is pinned (`litellm/litellm:v1.106.2`); update deliberately, it holds every key.
-- `docker compose -f ...\workstation\gateway\compose.yaml --project-directory ...\workstation\gateway up -d` from PowerShell.
-- Sanity check: `curl $LLM_GATEWAY_URL/v1/models` with the bearer key must list all four aliases.
+- Image is pinned (`litellm/litellm:v1.106.6` on the cluster; the laptop Compose file still has `v1.106.2`); update deliberately, it holds every key.
+- Cluster: edited through Git (`platform/llm-gateway/`) and applied by Argo CD.
+- Fallback (laptop): `docker compose -f ...\workstation\gateway\compose.yaml --project-directory ...\workstation\gateway up -d` from PowerShell.
+- Sanity check: `curl $LLM_GATEWAY_URL/v1/models` with the bearer key must list all three aliases (`fast`, `code`, `reason`).
 - Small reasoning models can burn max_tokens on reasoning; give chat calls token headroom.
