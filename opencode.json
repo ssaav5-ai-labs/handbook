@@ -14,7 +14,7 @@
   },
   "model": "gateway/code",
   "permission": {
-    "external_directory": { "/knowledge/handbook/**": "allow" },
+    "external_directory": { "/knowledge/handbook/**": "allow", "/tmp/agent/**": "allow" },
     "bash": {
       "*": "allow",
       "rm *": "ask",
