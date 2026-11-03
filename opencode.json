@@ -14,6 +14,7 @@
   },
   "model": "gateway/code",
   "permission": {
+    "external_directory": { "/knowledge/handbook/**": "allow" },
     "bash": {
       "*": "allow",
       "rm *": "ask",
