@@ -37,19 +37,32 @@
       "kubectl * get secret *": "ask",
       "kubectl * get secrets *": "ask",
       "env": "deny",
-      "printenv": "deny",
-      "printenv *": "deny"
-    },
-    "read": {
+        "printenv": "deny",
+        "printenv *": "deny",
+        "kubectl exec*": "deny",
+        "kubectl * exec *": "deny",
+        "kubectl cp*": "deny",
+        "*kustomize build*": "ask",
+        "*ksops*": "deny",
+        "sops *": "deny",
+        "gh auth token*": "deny",
+        "git push -f*": "deny",
+        "git push --force*": "deny",
+        "gh pr merge*": "allow"
+      },
+      "read": {
       "*": "allow",
-      "*.env": "deny",
-      "*.env.*": "deny",
+        "*.env": "deny",
+        "bootstrap/versions.env": "allow",
+        "*.env.*": "deny",
       "*.tfvars": "deny",
       "*/.kube/config": "deny",
       "*/k3s.yaml": "deny",
       "*keys.txt": "deny",
-      "*/.sops-age/*": "deny"
-    }
+        "*/.sops-age/*": "deny",
+        "~/.config/gh/**": "deny",
+        "**/hosts.yml": "deny"
+      }
   },
   "mcp": {
     "open-knowledge": {

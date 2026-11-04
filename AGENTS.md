@@ -24,4 +24,6 @@ When asked to run a playbook, follow `playbooks/RUNNING.md`. When writing a new 
 - Commit secrets, tokens, real public IPs, real hostnames, or employer/client material. Use placeholders like `<lab-domain>`.
 - Mark anything `visibility: private` here; private content belongs in the personal career-vault repo.
 - Push to `main`. Open a PR.
+- Never render, exec into or print anything that decrypts secrets (KSOPS, sops, the Argo CD repo-server). Debug sync failures from the Application status only.
+- You may merge your own PRs with `gh pr merge --squash` once all required checks are green; never merge with failing or pending checks.
 - Scratch work (chart renders, pulled charts, test files) goes in /tmp/agent/, never directly in /tmp.
