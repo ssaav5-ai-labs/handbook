@@ -6,10 +6,10 @@ domain: ai-stack
 tags: [llm, openrouter, litellm, hermes, crewai, langfuse, langsmith, agents]
 status: draft
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-11-04
 visibility: public
 reuse: portable
-related: [../../decisions/0008-vendor-neutral-ai-stack.md, ../../decisions/0009-hermes-for-local-automation.md, ../../decisions/0010-langfuse-for-tracing-and-evals.md]
+related: [../../decisions/0008-vendor-neutral-ai-stack.md, ../../decisions/0009-hermes-for-local-automation.md, ../../decisions/0010-langfuse-for-tracing-and-evals.md, ../../decisions/0022-llm-gateway-on-k3s.md, ../../decisions/0025-gateway-virtual-keys-with-postgres.md, reference-gateway.md, runbook-gateway-fallback.md]
 blog: candidate
 ---
 
@@ -38,7 +38,7 @@ flowchart TB
     CR[CrewAI: SRE management crews]
     FA[AI dev factory]
   end
-  GW[LLM gateway: LiteLLM, aliases fast / code / reason]
+  GW[LLM gateway on k3s: LiteLLM, aliases fast / code / reason]
   OR[OpenRouter]
   LO[Ollama, local]
   OB[Langfuse: traces, cost, evals]
@@ -51,13 +51,14 @@ flowchart TB
 
 ### 1. Model access: OpenRouter behind your own gateway
 - **OpenRouter** gives one key and one bill for hundreds of models, including cheap open-weight ones. It charges a 5.5% fee on credit purchases and keeps only metadata by default ([pricing/FAQ](https://openrouter.ai/docs/cookbook/coding-agents/claude-code-integration)).
-- **Don't point tools at OpenRouter directly.** Put a **LiteLLM** proxy in front (a container on the laptop now, on k3s later). Tools call `http://llm-gateway/v1` with **aliases** instead of vendor model names:
+- **Don't point tools at OpenRouter directly.** Put a **LiteLLM** proxy in front (it runs on k3s now; the laptop Compose file is the fallback, [ADR-0022](../../decisions/0022-llm-gateway-on-k3s.md)). Tools call `http://llm-gateway/v1` with **aliases** instead of vendor model names:
   - `fast`: cheap model for summaries, journaling, classification
   - `code`: strong, cost-competitive coding model
   - `reason`: frontier model for planning and review, used sparingly
   - `local`: Ollama model for offline or private work
 - Swapping a model or leaving OpenRouter becomes a gateway config change. The gateway also gives per-key budgets, spend tracking and traces, which is good SRE practice and good portfolio material.
 - Pin the gateway image to a specific version or digest and update deliberately; it holds every API key.
+- The cluster gateway is the `llm-gateway` Argo CD app; the laptop Compose gateway is the documented fallback. See the [gateway reference](reference-gateway.md) and the [fallback runbook](runbook-gateway-fallback.md).
 
 ### 2. Coding harness
 - **Default: OpenCode** (open source, any OpenAI-compatible provider, reads `AGENTS.md` and skills). It works with every alias, so cheap models are the default.

@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: portable
 created: 2026-10-20
-updated: 2026-10-29
+updated: 2026-11-04
 ---
 
 # Decision log
@@ -33,5 +33,9 @@ updated: 2026-10-29
 | [0017](0017-kubeconfig-on-windows-mounted-into-containers.md) | Kubeconfig on Windows mounted into dev containers; SSH key in a Docker volume | workstation | accepted |
 | [0019](0019-gitops-with-argo-cd-app-of-apps.md) | Slim, self-managed Argo CD with app-of-apps, from `homelab-gitops` | platform | accepted |
 | [0020](0020-secrets-in-git-with-sops-age-ksops.md) | Secrets in Git with SOPS + age, decrypted by KSOPS in Argo CD | platform | accepted |
-| [0021](0021-grafana-cloud-for-monitoring.md) | Grafana Cloud free tier through Alloy; alert rules in Git, alerts to Telegram | platform | proposed |
-| [0022](0022-llm-gateway-on-k3s.md) | LiteLLM gateway on k3s (plain manifests, HTTP on the LAN), laptop Compose as fallback | ai-stack | proposed |
+| [0021](0021-grafana-cloud-for-monitoring.md) | Grafana Cloud free tier through Alloy; alert rules in Git, alerts to Slack | platform | accepted (amended by 0026) |
+| [0022](0022-llm-gateway-on-k3s.md) | LiteLLM gateway on k3s (plain manifests, HTTP on the LAN), laptop Compose as fallback | ai-stack | accepted |
+| [0023](0023-hermes-on-k3s-pod-as-sandbox.md) | Hermes on k3s from Git, pod as its sandbox, policy in a read-only managed config | ai-stack | proposed |
+| [0024](0024-alerts-to-hermes-by-polling-then-in-cluster-webhook.md) | Grafana Cloud alerts to Hermes by polling now, in-cluster webhook later | ai-stack | proposed |
+| [0025](0025-gateway-virtual-keys-with-postgres.md) | Per-client gateway virtual keys in a small in-cluster Postgres, rebuilt not backed up | ai-stack | proposed |
+| [0026](0026-grafana-managed-alert-rules-synced-from-git-by-ci.md) | Grafana-managed alert rules synced from Git by CI (amends 0021) | platform | accepted |

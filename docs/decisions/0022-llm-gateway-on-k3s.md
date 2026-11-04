@@ -4,9 +4,9 @@ title: Run the LiteLLM gateway on k3s as plain manifests, reachable over HTTP on
 description: The LLM gateway moves from the laptop to the cluster as an Argo CD app with its config in Git and its keys in SOPS, keeps the same master key and aliases, sends traces to Langfuse Cloud and metrics to Grafana Cloud, and keeps the laptop Compose file for when the cluster is down.
 domain: ai-stack
 tags: [litellm, gateway, k3s, argocd, sops, langfuse, opentelemetry]
-status: proposed
+status: accepted
 created: 2026-10-30
-updated: 2026-10-30
+updated: 2026-11-04
 visibility: public
 reuse: portable
 related: [0008-vendor-neutral-ai-stack.md, 0012-langfuse-cloud-until-capacity.md, 0020-secrets-in-git-with-sops-age-ksops.md, 0021-grafana-cloud-for-monitoring.md, ../domains/ai-stack/reference-gateway.md]
