@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: portable
 created: 2026-10-20
-updated: 2026-10-29
+updated: 2026-11-04
 ---
 
 # How an AI agent runs a playbook
@@ -38,7 +38,10 @@ From there the agent drives. The human answers questions and does the manual ste
 ## Rules
 
 - Never commit secrets, tokens, real public IPs or hostnames. Use placeholders.
-- Never print a file or variable that may hold a secret (`.env`, `*.tfvars`, kubeconfigs, `/etc/rancher/k3s/config.yaml`, the age key in `$SOPS_AGE_KEY_FILE`), a Kubernetes Secret's data (`kubectl get secret -o yaml|json|jsonpath`; use `kubectl describe secret`, which shows only key names and sizes) or a decrypted SOPS file (`sops decrypt`; the human uses `sops edit` in their own terminal): anything you print lands in the transcript and goes to the model provider. Check them without showing values (`cut -d= -f1 .env`, `grep -c '^KEY=' .env`), load them with `set -a; . ./.env; set +a`, and never paste a secret into a command line. `opencode.json` backs this rule with `read` and `bash` deny rules; copy it into every repo.
+- Never print a file or variable that may hold a secret (`.env`, `*.tfvars`, kubeconfigs, `/etc/rancher/k3s/config.yaml`, the age key in `$SOPS_AGE_KEY_FILE`, `~/.config/gh/hosts.yml`), a Kubernetes Secret's data (`kubectl get secret -o yaml|json|jsonpath`; use `kubectl describe secret`, which shows only key names and sizes) or a decrypted SOPS file (`sops decrypt`; the human uses `sops edit` in their own terminal): anything you print lands in the transcript and goes to the model provider. Check them without showing values (`cut -d= -f1 .env`, `grep -c '^KEY=' .env`), load them with `set -a; . ./.env; set +a`, and never paste a secret into a command line. `opencode.json` backs this rule with `read` and `bash` deny rules; copy it into every repo.
+- **Human shell for secrets.** The human's shell is a second `ssh <repo>.devpod` (or the documented Docker fallback), not the agent's. Both shells share the folder: the agent creates the branch, the human only edits the SOPS file. Never tell the human to `git add`, `git commit --amend` or `git push -f`; after their edit, make a normal commit and push.
+- **SOPS paste hygiene.** Move the cursor to the value with the arrow keys before pasting. A paste at line 1 becomes a YAML key, and SOPS encrypts values only, so the secret lands in plaintext in a public repo. After saving, the human checks `head -3` (first line `apiVersion: v1`) and `grep -c 'sk-or'` is `0`; the agent runs `scripts/check-secrets.sh`.
+- **Never render or exec anything that decrypts.** No `kustomize build`, `ksops`, `sops decrypt`/`sops -d`, and no `kubectl exec` into a container that has secrets, not even to debug. Debug Argo CD sync failures from `kubectl -n argocd get application <app> -o yaml` status only; if a value is wrong, ask the human to re-edit.
 - Never push to `main`; open a PR.
 - If reality differs from the playbook (a UI changed, a command fails), fix the run, then propose an edit to the playbook in the same PR. Playbooks improve every time they run.
 - If a command fails, read the error and diagnose before retrying. Never rerun the same command unchanged.

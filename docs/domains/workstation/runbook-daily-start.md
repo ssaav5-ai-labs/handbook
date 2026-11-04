@@ -1,15 +1,15 @@
 ---
 type: runbook
 title: Start and stop the local dev environment
-description: Daily routine on the Windows laptop - start the LLM gateway and the handbook dev container, open a shell in it, resume the agent, and shut down.
+description: Daily routine on the Windows laptop - start the laptop gateway (fallback), start any repo's dev container, open a shell, resume the agent, check the cluster, and shut down.
 domain: workstation
-tags: [devpod, docker, windows, opencode]
+tags: [devpod, docker, windows, opencode, k3s, argocd, grafana, sops]
 status: active
 visibility: public
 reuse: lab-specific
 created: 2026-10-23
-updated: 2026-10-23
-related: [index.md, ../../../playbooks/00-workstation-knowledge/PLAYBOOK.md]
+updated: 2026-11-04
+related: [index.md, ../../../playbooks/00-workstation-knowledge/PLAYBOOK.md, ../ai-stack/runbook-gateway-fallback.md]
 ---
 
 # Start and stop the local dev environment
@@ -19,7 +19,7 @@ Everything runs in **PowerShell on Windows** unless a step says "in the containe
 ## Start
 
 1. Start **Docker Desktop** and wait until it says *Engine running*.
-2. Start the LLM gateway:
+2. Start the laptop LLM gateway **only if the cluster gateway is down** (or you haven't switched to it yet — see [Gateway](#gateway)):
    ```powershell
    cd $env:USERPROFILE\code\github.com\ssaav5-ai-labs\workstation\gateway
    docker compose up -d
@@ -40,6 +40,18 @@ Everything runs in **PowerShell on Windows** unless a step says "in the containe
    opencode               # new session
    ```
 
+## Any other repo container
+
+For `homelab-gitops` (or any repo with a DevPod workspace), use the generic path:
+
+```powershell
+devpod up "$env:USERPROFILE\code\github.com\ssaav5-ai-labs\homelab-gitops" --ide none
+ssh homelab-gitops.devpod
+cd /workspaces/homelab-gitops
+```
+
+Need a second shell (for `sops edit`)? Run `ssh homelab-gitops.devpod` in another PowerShell window. Both shells share the folder; don't create a branch in the human shell.
+
 ## Check it works
 
 In the container:
@@ -48,6 +60,21 @@ echo "$LLM_GATEWAY_URL ${LLM_GATEWAY_KEY:+key set}"
 curl -s -H "Authorization: Bearer $LLM_GATEWAY_KEY" "$LLM_GATEWAY_URL/v1/models" | grep -o '"id":"[^"]*"'
 ```
 You should see the URL, `key set`, and the aliases fast, code, reason and local. OpenCode's footer should show `code · LLM gateway`.
+
+## Check the cluster
+
+In the `homelab-gitops` shell:
+
+```bash
+kubectl get nodes                 # both Ready
+kubectl -n argocd get applications
+```
+
+In Grafana Cloud (`https://<stack>.grafana.net`) → **Alerting → Alert rules** → `homelab` folder: `LabSilent` is `Normal`. Argo CD apps are `Synced`/`Healthy`.
+
+## Gateway
+
+The cluster gateway (`http://llm.<k3s-01-ip>.nip.io`) is primary after playbook 05; the laptop Compose gateway is the fallback. Keep the laptop gateway running until `LLM_GATEWAY_URL` is switched, then start it only when the cluster is down. See [the fallback runbook](../ai-stack/runbook-gateway-fallback.md).
 
 ## Shortcut (optional)
 
@@ -74,6 +101,8 @@ devpod stop handbook
 docker compose -f "$env:USERPROFILE\code\github.com\ssaav5-ai-labs\workstation\gateway\compose.yaml" stop
 ```
 OpenCode history survives stops and rebuilds (it lives in the `opencode-data` volume). Uncommitted files survive too, because the handbook folder is on Windows.
+
+If you've switched to the cluster gateway, remove the `docker compose ... up -d` line from the `hb` shortcut; the laptop gateway is the fallback now.
 
 ## When something is off
 

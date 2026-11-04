@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: lab-specific
 created: 2026-10-20
-updated: 2026-10-30
+updated: 2026-11-04
 ---
 
 # Open questions
@@ -30,8 +30,8 @@ updated: 2026-10-30
 | TLS for lab services on the LAN (the gateway is plain HTTP) | platform | A lab CA with cert-manager, trusted on Windows and in dev containers, together with lab DNS on a Pi | With the DNS question |
 | Gateway virtual keys and spend database | ai-stack | One virtual key per client with its own budget; a small Postgres on k3s | Playbook 06 (Hermes is the second client) |
 | k3s control-plane metrics (scheduler, controller manager, etcd) | k3s | Off for now; expose with k3s server flags if a problem needs them (mind the 10k-series budget) | When needed |
-| Grafana Cloud contact points, policies and dashboards as code | platform | Terraform `grafana` provider in `homelab-infra`, once there's more than a handful | When the UI setup grows |
+| Grafana Cloud contact points, policies and dashboards as code | platform | Terraform `grafana` provider in `homelab-infra`, once there's more than a handful; alert rules are already code via CI ([ADR-0026](../decisions/0026-grafana-managed-alert-rules-synced-from-git-by-ci.md)) | When the UI setup grows |
 | How the SRE agents read metrics and logs | ai-stack | A scoped Grafana Cloud read token behind an MCP server, never in a transcript | Playbook 07 |
-| Observability stack | platform | Grafana Cloud free tier through Alloy (`k8s-monitoring` chart); rules in Git; alerts to Telegram. Self-hosted VictoriaMetrics when a third node arrives | [ADR-0021](../decisions/0021-grafana-cloud-for-monitoring.md) (proposed), playbook 05 |
+| Observability stack | platform | Grafana Cloud free tier through Alloy (`k8s-monitoring` chart); rules in Git imported by CI into Grafana-managed rules; alerts to Slack. Self-hosted VictoriaMetrics when a third node arrives | [ADR-0021](../decisions/0021-grafana-cloud-for-monitoring.md) (accepted, amended by [ADR-0026](../decisions/0026-grafana-managed-alert-rules-synced-from-git-by-ci.md)), playbook 05 |
 | Site generator after MkDocs Material's maintenance ends (Nov 5, 2026) | meta | Stay on MkDocs 1.6.1 (pinned); evaluate Zensical | Zensical blog/plugin parity |
 | Third Proxmox node | proxmox | 16 GB or more, wired Ethernet; Chromebox (16 GB) among the candidates ([add a node](../domains/proxmox/howto-add-node.md)) | When Shawn picks one |
