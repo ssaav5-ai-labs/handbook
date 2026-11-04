@@ -159,6 +159,8 @@ The first sync takes a few minutes: the Alloy operator starts, then creates the 
 **Verify:** The series count is recorded and under budget; the Telegram message arrived and resolved; the rule appeared and disappeared in Grafana Cloud only through Git.
 **Record:** `reference-monitoring.md`: the series budget and how to check it, the contact point and policies (written down, since they're set in the UI), how to send a test alert. Journal: series count, how long Git → Telegram took.
 
+> **Run follow-up (token expiry):** if rules are imported from Git by CI (the run's replacement for Alloy rule sync), set the rules token to an explicit **1-year expiry** and a calendar reminder to rotate it. A `401 Unauthorized` with `"Expired API key"` in the `alert-rules` workflow means the token expired; rules silently stop syncing until it is rotated and the run re-run.
+
 ### 6. Rules for this lab: the lab going silent, Argo CD, swap, disks
 **Why:** The most important alert for a lab watched from outside is the one a self-hosted stack can't send: **the lab stopped talking**. Grafana Cloud's ruler evaluates it while the cluster is dead. Then three things particular to this lab: an Argo CD app that stays out of sync or unhealthy (Git no longer describes the cluster), sustained swapping (zram hides memory pressure until it doesn't, [ADR-0016](../../docs/decisions/0016-zram-swap-on-k3s-nodes.md)), and a node's disk filling up (local-path volumes, etcd and images share the 60 GB).
 **Actions:**
