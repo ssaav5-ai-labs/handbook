@@ -42,7 +42,7 @@ From there the agent drives. The human answers questions and does the manual ste
 - **Human shell for secrets.** The human's shell is a second `ssh <repo>.devpod` (or the documented Docker fallback), not the agent's. Both shells share the folder: the agent creates the branch, the human only edits the SOPS file. Never tell the human to `git add`, `git commit --amend` or `git push -f`; after their edit, make a normal commit and push.
 - **SOPS paste hygiene.** Move the cursor to the value with the arrow keys before pasting. A paste at line 1 becomes a YAML key, and SOPS encrypts values only, so the secret lands in plaintext in a public repo. After saving, the human checks `head -3` (first line `apiVersion: v1`) and `grep -c 'sk-or'` is `0`; the agent runs `scripts/check-secrets.sh`.
 - **Never render or exec anything that decrypts.** No `kustomize build`, `ksops`, `sops decrypt`/`sops -d`, and no `kubectl exec` into a container that has secrets, not even to debug. Debug Argo CD sync failures from `kubectl -n argocd get application <app> -o yaml` status only; if a value is wrong, ask the human to re-edit.
-- Never push to `main`; open a PR.
+- Never push to `main`; open a PR. You may merge your own PRs with `gh pr merge --squash` once all required checks are green; never merge with failing or pending checks.
 - If reality differs from the playbook (a UI changed, a command fails), fix the run, then propose an edit to the playbook in the same PR. Playbooks improve every time they run.
 - If a command fails, read the error and diagnose before retrying. Never rerun the same command unchanged.
 - If a step's answer changes an accepted ADR, stop and propose a superseding ADR instead of silently diverging.
