@@ -26,7 +26,7 @@ updated: 2026-11-09
 | [0010](0010-langfuse-for-tracing-and-evals.md) | Self-hosted Langfuse for tracing and evals | ai-stack | accepted |
 | [0011](0011-github-org-name.md) | Single GitHub org `ssaav5-ai-labs` | github | accepted |
 | [0012](0012-langfuse-cloud-until-capacity.md) | Langfuse Cloud (EU, free tier) until the lab can host Langfuse | ai-stack | accepted |
-| [0013](0013-two-nodes-without-qdevice.md) | Two Proxmox nodes without a QDevice until a third node is chosen | proxmox | accepted |
+| [0013](0013-two-nodes-without-qdevice.md) | Two Proxmox nodes without a QDevice until a third node is chosen | proxmox | superseded by 0030 |
 | [0014](0014-provision-proxmox-vms-opentofu-bpg-provider.md) | Provision Proxmox VMs with OpenTofu (bpg/proxmox) and a cloud-init template | proxmox | proposed |
 | [0015](0015-k3s-embedded-etcd-server-and-agent.md) | k3s with embedded etcd: one server and one agent, pinned install scripts | k3s | accepted |
 | [0016](0016-zram-swap-on-k3s-nodes.md) | zram swap plus a small swap file on k3s nodes, `LimitedSwap` for pods | k3s | accepted |
@@ -39,4 +39,6 @@ updated: 2026-11-09
 | [0024](0024-alerts-to-hermes-by-polling-then-in-cluster-webhook.md) | Grafana Cloud alerts to Hermes by polling now, in-cluster webhook later | ai-stack | accepted |
 | [0025](0025-gateway-virtual-keys-with-postgres.md) | Per-client gateway virtual keys in a small in-cluster Postgres, rebuilt not backed up | ai-stack | accepted |
 | [0026](0026-grafana-managed-alert-rules-synced-from-git-by-ci.md) | Grafana-managed alert rules synced from Git by CI (amends 0021) | platform | accepted |
+| [0030](0030-three-node-proxmox-cluster.md) | Three-node Proxmox cluster: normal quorum, no Proxmox HA, `nvme-data` thin pool on pve03 (supersedes 0013) | proxmox | proposed |
+| [0031](0031-k3s-three-servers-behind-kube-vip.md) | k3s grows to three servers with embedded etcd behind kube-vip; heavy apps prefer k3s-03 (supersedes 0015 when run) | k3s | proposed |
 | [0032](0032-argo-cd-apps-delete-resources-stateful-data-kept.md) | Argo CD apps delete their resources; stateful data is kept | platform | accepted |

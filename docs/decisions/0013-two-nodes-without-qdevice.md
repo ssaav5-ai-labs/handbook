@@ -4,18 +4,20 @@ title: Run two Proxmox nodes without a QDevice until a third node is chosen
 description: The cluster stays at pve01 and pve02 with no Raspberry Pi tie-breaker; losing a node is handled by hand with pvecm expected 1, and a third node joins later.
 domain: proxmox
 tags: [proxmox, cluster, quorum, k3s, capacity]
-status: accepted
+status: superseded
 created: 2026-10-27
-updated: 2026-10-27
+updated: 2026-11-07
 visibility: public
 reuse: portable
 related: [../domains/proxmox/reference-hardware.md, ../domains/proxmox/howto-add-node.md, ../../playbooks/02-proxmox/PLAYBOOK.md, ../journal/2026/2026-10-26-two-nodes-and-a-pi.md, 0012-langfuse-cloud-until-capacity.md]
 supersedes: []
-superseded_by: []
+superseded_by: [0030-three-node-proxmox-cluster.md]
 blog: candidate
 ---
 
 # 0013. Run two Proxmox nodes without a QDevice until a third node is chosen
+
+> **Superseded on 2026-11-07** by [ADR-0030](0030-three-node-proxmox-cluster.md): `pve03` joined, and the cluster has three votes.
 
 ## Context
 `pve01` and `pve02` have 8 GB each and can't take more RAM. The plan of 2026-10-26 added a Raspberry Pi 3 as a QDevice, a vote-only tie-breaker, so either node could go down without the other losing control. On 2026-10-27 Shawn decided a third machine is coming (a 16 GB Chromebox and other options are being weighed) and that time spent on a temporary Pi tie-breaker isn't worth it.

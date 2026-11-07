@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: lab-specific
 created: 2026-10-20
-updated: 2026-11-08
+updated: 2026-11-09
 ---
 
 # Open questions
@@ -24,7 +24,7 @@ updated: 2026-11-08
 | Uses for the Raspberry Pi 3s | proxmox | Uptime Kuma for outside-the-cluster checks; DNS later. No QDevice (ADR-0013) | After playbook 05 |
 | AI factory architecture | ai-factory | | After platform is up |
 | Proxmox provisioning | proxmox | OpenTofu (bpg/proxmox) + cloud-init template | [ADR-0014](../decisions/0014-provision-proxmox-vms-opentofu-bpg-provider.md) |
-| k3s topology (nodes, HA, storage) | k3s | Server (embedded etcd) on `pve01`, agent on `pve02`, local-path storage; three servers when a third node joins | [ADR-0015](../decisions/0015-k3s-embedded-etcd-server-and-agent.md) |
+| k3s topology (nodes, HA, storage) | k3s | Three servers with embedded etcd behind kube-vip, heavy apps on `k3s-03`; local-path storage | [ADR-0015](../decisions/0015-k3s-embedded-etcd-server-and-agent.md), [ADR-0031](../decisions/0031-k3s-three-servers-behind-kube-vip.md) (proposed) |
 | GitOps controller | platform | Argo CD, slim and self-managed, app-of-apps from `homelab-gitops` | [ADR-0019](../decisions/0019-gitops-with-argo-cd-app-of-apps.md) (accepted) |
 | Secrets management | platform | SOPS + age in Git, KSOPS in Argo CD; age key in the password manager | [ADR-0020](../decisions/0020-secrets-in-git-with-sops-age-ksops.md) (accepted) |
 | Move `homelab-infra/.env` (k3s token) into SOPS | platform | Yes, with the lab age key | Playbook 05, Part B |
@@ -36,4 +36,5 @@ updated: 2026-11-08
 | How the SRE agents read metrics and logs | ai-stack | A scoped Grafana Cloud read token behind an MCP server, never in a transcript | Playbook 07 |
 | Observability stack | platform | Grafana Cloud free tier through Alloy (`k8s-monitoring` chart); rules in Git imported by CI into Grafana-managed rules; alerts to Slack. Self-hosted VictoriaMetrics when a third node arrives | [ADR-0021](../decisions/0021-grafana-cloud-for-monitoring.md) (accepted, amended by [ADR-0026](../decisions/0026-grafana-managed-alert-rules-synced-from-git-by-ci.md)), playbook 05 |
 | Site generator after MkDocs Material's maintenance ends (Nov 5, 2026) | meta | Stay on MkDocs 1.6.1 (pinned); evaluate Zensical | Zensical blog/plugin parity |
-| Third Proxmox node | proxmox | 16 GB or more, wired Ethernet; Chromebox (16 GB) among the candidates ([add a node](../domains/proxmox/howto-add-node.md)) | When Shawn picks one |
+| Third Proxmox node | proxmox | `pve03`, i7-12700T, 32 GB, joined 2026-11-07 | [ADR-0030](../decisions/0030-three-node-proxmox-cluster.md) |
+| What to do with pve03's spare ~17 GB | proxmox | Keep free until Backstage (playbook 08) is sized; candidates: grow `k3s-03`, self-host Langfuse (ADR-0012) or VictoriaMetrics (ADR-0021) | After playbook 08 |
