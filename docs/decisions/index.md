@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: portable
 created: 2026-10-20
-updated: 2026-11-08
+updated: 2026-11-09
 ---
 
 # Decision log
@@ -39,3 +39,4 @@ updated: 2026-11-08
 | [0024](0024-alerts-to-hermes-by-polling-then-in-cluster-webhook.md) | Grafana Cloud alerts to Hermes by polling now, in-cluster webhook later | ai-stack | accepted |
 | [0025](0025-gateway-virtual-keys-with-postgres.md) | Per-client gateway virtual keys in a small in-cluster Postgres, rebuilt not backed up | ai-stack | accepted |
 | [0026](0026-grafana-managed-alert-rules-synced-from-git-by-ci.md) | Grafana-managed alert rules synced from Git by CI (amends 0021) | platform | accepted |
+| [0032](0032-argo-cd-apps-delete-resources-stateful-data-kept.md) | Argo CD apps delete their resources; stateful data is kept | platform | accepted |
