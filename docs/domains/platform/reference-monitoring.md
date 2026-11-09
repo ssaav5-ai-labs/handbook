@@ -79,7 +79,7 @@ Credentials: the Alloy token is in the SOPS Secret `monitoring/grafana-cloud` (`
 | `NodeSwapping` | `rate(node_vmstat_pswpin[10m]) > 100` | 30m | warning |
 | `NodeDiskFilling` | root filesystem free `< 0.15` | 15m | warning |
 | `NodeNotReady` | `kube_node_status_condition{condition="Ready", status="true", cluster="homelab"} == 0` | 5m | critical |
-| `PodCrashLooping` | `increase(kube_pod_container_status_restarts_total{cluster="homelab"}[15m]) > 3` | 15m | warning |
+| `PodCrashLooping` | `max_over_time(kube_pod_container_status_waiting_reason{cluster="homelab", reason="CrashLoopBackOff"}[5m]) >= 1` | 15m | warning |
 | `LiteLLMDown` | `up{cluster="homelab", namespace="llm-gateway"} == 0 or absent(...)` | 5m | critical |
 
 The CI workflow imports them; Alloy's rule sync is off.

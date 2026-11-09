@@ -56,12 +56,14 @@ Fallback while the cluster gateway is down: the laptop Compose gateway (see
 
 ## PodCrashLooping (warning, ~15 min)
 
-`increase(kube_pod_container_status_restarts_total[15m]) > 3` for 15m, in `argocd`, `monitoring` or
-`llm-gateway`.
+`max_over_time(kube_pod_container_status_waiting_reason{cluster="homelab", reason="CrashLoopBackOff"}[5m]) >= 1` for 15m: a container
+has been waiting in `CrashLoopBackOff`, in any namespace. (A restart-count rule stops firing once the back-off reaches
+5 minutes, so it misses exactly the pods that stay broken.)
 
 1. `kubectl -n <ns> get pods`: which pod, how many restarts?
 2. `kubectl -n <ns> describe pod <pod>`: last state, exit code, `OOMKilled`?
 3. `kubectl -n <ns> logs <pod> --previous`: the crash reason.
+4. Fix it in Git (`homelab-gitops`). A pod left over from an app that was removed from Git (no `resources-finalizer`) can be deleted by hand.
 
 ## NodeSwapping (warning, ~30 min)
 
