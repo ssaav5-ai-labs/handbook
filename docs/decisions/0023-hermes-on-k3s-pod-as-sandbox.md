@@ -4,9 +4,9 @@ title: Run Hermes on k3s from Git, with the pod as its sandbox and policy in a r
 description: Hermes Agent runs as one pod deployed by Argo CD, executes commands in its own container, reads the cluster through a read-only ServiceAccount, is kept off the home LAN by a NetworkPolicy, takes model, approval and skill policy from a ConfigMap it can't change, and reads reviewed skills from the homelab-agents repo.
 domain: ai-stack
 tags: [hermes, agents, k3s, argocd, rbac, networkpolicy, security, skills]
-status: proposed
+status: accepted
 created: 2026-11-01
-updated: 2026-11-01
+updated: 2026-11-08
 visibility: public
 reuse: portable
 related: [0008-vendor-neutral-ai-stack.md, 0009-hermes-for-local-automation.md, 0020-secrets-in-git-with-sops-age-ksops.md, 0022-llm-gateway-on-k3s.md, 0024-alerts-to-hermes-by-polling-then-in-cluster-webhook.md, 0025-gateway-virtual-keys-with-postgres.md]

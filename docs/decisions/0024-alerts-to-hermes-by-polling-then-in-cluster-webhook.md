@@ -4,9 +4,9 @@ title: Bring Grafana Cloud alerts to Hermes by polling from the cluster now, and
 description: The lab opens no inbound path; a script-only Hermes cron job polls Grafana Cloud's firing alerts every 2 minutes with a read-only token and wakes the model only for new alerts, while Hermes' webhook route is kept cluster-internal for a future in-lab alert manager.
 domain: ai-stack
 tags: [hermes, grafana-cloud, alerting, webhooks, cron, polling, security]
-status: proposed
+status: accepted
 created: 2026-11-01
-updated: 2026-11-04
+updated: 2026-11-08
 visibility: public
 reuse: portable
 related: [0021-grafana-cloud-for-monitoring.md, 0023-hermes-on-k3s-pod-as-sandbox.md]

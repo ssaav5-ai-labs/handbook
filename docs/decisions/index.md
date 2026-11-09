@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: portable
 created: 2026-10-20
-updated: 2026-11-04
+updated: 2026-11-08
 ---
 
 # Decision log
@@ -22,7 +22,7 @@ updated: 2026-11-04
 | [0006](0006-local-repo-layout.md) | Local layout `~/code/<host>/<owner>/<repo>` | workstation | accepted |
 | [0007](0007-ai-first-playbooks.md) | AI-first playbooks instead of command-list tutorials | meta | accepted |
 | [0008](0008-vendor-neutral-ai-stack.md) | Open interfaces + self-hosted LLM gateway (OpenRouter upstream) | ai-stack | accepted |
-| [0009](0009-hermes-for-local-automation.md) | Hermes Agent for local automations, sandboxed | ai-stack | proposed |
+| [0009](0009-hermes-for-local-automation.md) | Hermes Agent for local automations, sandboxed | ai-stack | superseded by [0023](0023-hermes-on-k3s-pod-as-sandbox.md) |
 | [0010](0010-langfuse-for-tracing-and-evals.md) | Self-hosted Langfuse for tracing and evals | ai-stack | accepted |
 | [0011](0011-github-org-name.md) | Single GitHub org `ssaav5-ai-labs` | github | accepted |
 | [0012](0012-langfuse-cloud-until-capacity.md) | Langfuse Cloud (EU, free tier) until the lab can host Langfuse | ai-stack | accepted |
@@ -35,7 +35,7 @@ updated: 2026-11-04
 | [0020](0020-secrets-in-git-with-sops-age-ksops.md) | Secrets in Git with SOPS + age, decrypted by KSOPS in Argo CD | platform | accepted |
 | [0021](0021-grafana-cloud-for-monitoring.md) | Grafana Cloud free tier through Alloy; alert rules in Git, alerts to Slack | platform | accepted (amended by 0026) |
 | [0022](0022-llm-gateway-on-k3s.md) | LiteLLM gateway on k3s (plain manifests, HTTP on the LAN), laptop Compose as fallback | ai-stack | accepted |
-| [0023](0023-hermes-on-k3s-pod-as-sandbox.md) | Hermes on k3s from Git, pod as its sandbox, policy in a read-only managed config | ai-stack | proposed |
-| [0024](0024-alerts-to-hermes-by-polling-then-in-cluster-webhook.md) | Grafana Cloud alerts to Hermes by polling now, in-cluster webhook later | ai-stack | proposed |
-| [0025](0025-gateway-virtual-keys-with-postgres.md) | Per-client gateway virtual keys in a small in-cluster Postgres, rebuilt not backed up | ai-stack | proposed |
+| [0023](0023-hermes-on-k3s-pod-as-sandbox.md) | Hermes on k3s from Git, pod as its sandbox, policy in a read-only managed config | ai-stack | accepted |
+| [0024](0024-alerts-to-hermes-by-polling-then-in-cluster-webhook.md) | Grafana Cloud alerts to Hermes by polling now, in-cluster webhook later | ai-stack | accepted |
+| [0025](0025-gateway-virtual-keys-with-postgres.md) | Per-client gateway virtual keys in a small in-cluster Postgres, rebuilt not backed up | ai-stack | accepted |
 | [0026](0026-grafana-managed-alert-rules-synced-from-git-by-ci.md) | Grafana-managed alert rules synced from Git by CI (amends 0021) | platform | accepted |

@@ -6,7 +6,7 @@ domain: ai-stack
 tags: [hermes, agents, slack, cron, webhooks, grafana-cloud, litellm, virtual-keys, postgres, argocd, sops, rbac, networkpolicy]
 status: draft
 created: 2026-11-01
-updated: 2026-11-01
+updated: 2026-11-08
 visibility: public
 reuse: portable
 repo: homelab-gitops
@@ -305,8 +305,8 @@ If you're resuming an earlier run, say so: the agent checks each step's Verify f
 ### 10. The skill loop: from chat to a reviewed PR
 **Why:** Hermes' best feature is writing skills from what it learns; in this lab nothing it writes takes effect unreviewed. With `write_approval` on, a new skill waits in Hermes' pending area until you approve it, and only `homelab-agents` (through git-sync) is what Hermes reads at the start of every session.
 **Actions:**
-- 🧑 DM Hermes: "Write a skill called argocd-app-check that checks one Argo CD application in detail: sync status, health, last sync result and conditions, read-only." It stages the skill. In Slack: `/skills pending`, `/skills diff <id>` (read it), then `/skills approve <id>`.
-- Agent: copy it out and into a PR: `kubectl -n hermes exec deploy/hermes -c hermes -- tar -C /opt/data/skills -cf - argocd-app-check | tar -C /tmp/agent/homelab-agents/hermes-skills -xf -` (check the path with `hermes skills list` first), run `scripts/check-skills.sh`, branch, commit, PR in `homelab-agents`. 🧑 Review and merge. Then delete the local copy in Hermes' data volume (`hermes skills` has a delete action; or `rm -r` through `exec`), so the Git version is the one it uses after git-sync's next pull.
+- 🧑 DM Hermes: "Write a skill called argocd-app-check that checks one Argo CD application in detail: sync status, health, last sync result and conditions, read-only." It stages the skill. In Slack: `/skills pending`, `/skills diff <id>` (read it), then `/skills approve <id>`. Type a **leading space** before each (` /skills …`), or Slack eats them as native slash commands. Approval validates the frontmatter YAML and rolls back on error.
+- 🧑 copy the skill out of the pod (agents can't `kubectl exec`): `kubectl -n hermes exec deploy/hermes -c hermes -- tar -C /opt/data/skills -cf - argocd-app-check | tar -C /tmp/agent/homelab-agents/hermes-skills -xf -` (check the path with `hermes skills list` first). Agent: run `scripts/check-skills.sh`, branch, commit, PR in `homelab-agents`. 🧑 Review and merge. Then delete the local copy in Hermes' data volume (`hermes skills` has a delete action; or `rm -r` through `exec`), so the Git version is the one it uses after git-sync's next pull.
 - Write the loop down as `docs/domains/ai-stack/howto-promote-hermes-skill.md`.
 
 **Verify:** `hermes skills list` shows `argocd-app-check` coming from `/git/current/hermes-skills` (external), not the local directory; Hermes uses it when asked ("check the monitoring app").
