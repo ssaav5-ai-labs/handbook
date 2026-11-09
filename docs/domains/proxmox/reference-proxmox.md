@@ -78,7 +78,7 @@ Each node's VMs back up to a USB disk on **another** node, so a disk or host fai
 | k3s-02 (VM 102) | `backup-on-pve01` |
 | k3s-03 (VM 103) | `backup-on-pve01` (03:30) |
 
-All jobs: daily 03:00 (pve03's at 03:30, so pve01's disk isn't written by two nodes at once), snapshot, ZSTD, keep-daily 7, keep-weekly 4.
+All jobs: k3s-01 at 03:00, k3s-03 at 03:30, k3s-02 at 04:00 (staggered so pve01's disk isn't written by two nodes at once), snapshot, ZSTD, keep-daily 7, keep-weekly 4.
 
 ## VM templates
 

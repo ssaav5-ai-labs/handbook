@@ -96,13 +96,13 @@ scripts/     checks used by CI
 - Chart version (default: the newest `argo-cd-*` release at `https://github.com/argoproj/argo-helm/releases` whose `appVersion` is a stable Argo CD 3.x, checked against `https://github.com/argoproj/argo-cd/releases`). The playbook was written against chart `10.11.6` / Argo CD `v3.5.6`.
 - KSOPS version (default: newest at `https://github.com/viaduct-ai/kustomize-sops/releases`; written against `v4.5.1`).
 - Keep the web UI? Default **yes**: it's how you'll see sync state and diffs, and it costs one small pod.
-- UI address. Default `argocd.<k3s-01-ip>.nip.io`: nip.io is a public DNS service that answers `argocd.192.168.86.211.nip.io` with `192.168.86.211`, so no DNS server or hosts file is needed. Some routers block DNS answers that point at private addresses; the check in step 5 catches that, and the fallback is a hosts-file entry. A real lab DNS name comes with the DNS question (Pi, later).
+- UI address. Default `argocd.<vip>.nip.io`: nip.io is a public DNS service that answers `argocd.192.168.86.210.nip.io` with `192.168.86.210` (the kube-vip API address, ADR-0031), so no DNS server or hosts file is needed. Some routers block DNS answers that point at private addresses; the check in step 5 catches that, and the fallback is a hosts-file entry. A real lab DNS name comes with the DNS question (Pi, later).
 - Components off: Dex (single sign-on; there's one user), notifications, and the ApplicationSet controller (app-of-apps doesn't need it; turn it on when apps are generated from folders). Default **all three off**.
 
 **Actions:**
 - `bootstrap/versions.env`: `ARGOCD_CHART_VERSION=<pinned>` and `KSOPS_VERSION=<pinned>`.
 - Read the pinned chart's `values.yaml` (`helm show values argo/argo-cd --version <pinned>` after `helm repo add argo https://argoproj.github.io/argo-helm`) for the exact keys, since they move between chart versions. Then write `bootstrap/argocd/values.yaml` with:
-  - `global.domain: argocd.<k3s-01-ip>.nip.io`.
+  - `global.domain: argocd.<vip>.nip.io`.
   - `configs.params."server.insecure": true` (Traefik terminates TLS, Argo CD serves plain HTTP inside the cluster).
   - `server.ingress`: enabled, `ingressClassName: traefik`, annotations `traefik.ingress.kubernetes.io/router.entrypoints: websecure` and `traefik.ingress.kubernetes.io/router.tls: "true"` (HTTPS only, with Traefik's built-in self-signed certificate).
   - `dex.enabled: false`, `notifications.enabled: false`, and the ApplicationSet controller at `replicas: 0` (this chart has no `enabled` switch for it), unless the questions said otherwise.

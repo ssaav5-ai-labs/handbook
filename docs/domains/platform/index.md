@@ -31,7 +31,7 @@ argocd namespace (k3s)
 
 Grafana Cloud: metrics, logs, Grafana-managed rules --► Slack (#homelab-alerts)
 laptop: dev container -- kubectl, helm, sops, age (key from %USERPROFILE%\.sops-age)
-browser -- https://argocd.192.168.86.211.nip.io  (Traefik, self-signed cert)
+browser -- https://argocd.192.168.86.210.nip.io  (Traefik, self-signed cert)
 ```
 
 Argo CD runs slim: 129 MiB steady-state (controller ~36 MiB, repo-server ~25 MiB, server ~59 MiB, Redis ~9 MiB). Dex, notifications and ApplicationSet are off until needed.

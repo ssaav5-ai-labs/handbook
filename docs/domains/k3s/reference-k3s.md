@@ -19,9 +19,10 @@ related: [../../decisions/0015-k3s-embedded-etcd-server-and-agent.md, ../../deci
 | Node | Role | Host | IP | vCPU | RAM |
 |---|---|---|---|---|---|
 | k3s-01 | server (control-plane, etcd) | pve01 | 192.168.86.211 | 4 | 4.5 GB |
-| k3s-02 | agent | pve02 | 192.168.86.212 | 4 | 4.5 GB |
+| k3s-02 | server (control-plane, etcd) | pve02 | 192.168.86.212 | 4 | 4.5 GB |
+| k3s-03 | server (control-plane, etcd) | pve03 | 192.168.86.213 | 6 | 12 GB |
 
-See [ADR-0015](../../decisions/0015-k3s-embedded-etcd-server-and-agent.md) for the topology decision.
+Three servers with embedded etcd behind one kube-vip API address, `192.168.86.210` ([ADR-0031](../../decisions/0031-k3s-three-servers-behind-kube-vip.md)). `k3s-03` carries `homelab.io/size=large` and hosts the memory-heavy workloads. See [ADR-0015](../../decisions/0015-k3s-embedded-etcd-server-and-agent.md) for the original topology decision (now superseded by ADR-0031).
 
 ## Memory
 
@@ -53,7 +54,12 @@ Set in `/etc/sysctl.d/90-zram.conf`:
 - **Kubernetes:** v1.36.5
 - **Etcd:** embedded, v3.6.14-k3s3
 - **Bundled components kept:** Traefik v3.7.13, ServiceLB, local-path-provisioner v0.0.37, metrics-server v0.9.0, CoreDNS v1.14.7
+- **kube-vip:** v1.3.1, ARP mode, DaemonSet on control-plane nodes, one leader holds `192.168.86.210`
 - **Pod network:** 10.42.0.0/16; **Service network:** 10.43.0.0/16
+
+## API address and kubeconfig
+
+The k3s API is reached at the kube-vip address `https://192.168.86.210:6443`, not any one node's IP. `k3s/kubeconfig.sh` writes the VIP into `~/.kube/config` (mounted into every dev container, ADR-0017), so `kubectl` keeps working when `k3s-01` is down.
 
 ### Installation
 
@@ -62,13 +68,14 @@ Set in `/etc/sysctl.d/90-zram.conf`:
 ### Server config
 
 - `secrets-encryption: true`, `cluster-init: true`
+- `tls-san: [<node-ip>, 192.168.86.210]` so the serving cert is valid on both the node IP and the VIP
 - etcd snapshots at 02:00, 7 retained
 - `write-kubeconfig-mode: "0600"`
 - Kubelet reservations: system 250m/384Mi, kube 250m/512Mi, eviction <256Mi
 
 ### Agent config
 
-- `server: https://<k3s-01>:6443`
+- `server: https://192.168.86.210:6443` (the kube-vip address)
 - Kubelet reservations: system 250m/384Mi, kube 100m/256Mi, eviction <256Mi
 
 ### Kubelet swap

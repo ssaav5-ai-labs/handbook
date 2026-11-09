@@ -39,7 +39,7 @@ k3s keeps managing its bundled Traefik, ServiceLB, local-path and metrics-server
 
 ## Network
 
-- UI: `https://argocd.192.168.86.211.nip.io` — Traefik terminates TLS with its built-in self-signed certificate; accept the certificate warning in the browser. Argo CD serves plain HTTP inside the cluster (`server.insecure: true`).
+- UI: `https://argocd.192.168.86.210.nip.io` — Traefik terminates TLS with its built-in self-signed certificate; accept the certificate warning in the browser. Argo CD serves plain HTTP inside the cluster (`server.insecure: true`).
 - Admin password lives in the password manager only; the initial `argocd-initial-admin-secret` was deleted. CLI access uses the kubeconfig via `argocd ... --core`, not this password.
 - Argo CD polls the repo every 3 minutes (`timeout.reconciliation: 180s`); there's no webhook because the cluster isn't reachable from GitHub. A "Refresh" in the UI is immediate.
 

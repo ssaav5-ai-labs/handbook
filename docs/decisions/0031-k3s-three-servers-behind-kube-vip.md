@@ -38,6 +38,7 @@ k3s runs one server (`k3s-01`, embedded etcd) and one agent (`k3s-02`), 4.5 GB e
 - `local-path` volumes on `k3s-02` (`hermes-data` and the gateway's Postgres) would be lost when it's rebuilt, so the run copies them to `k3s-03` first. ADR-0032's `Delete=false` keeps Argo CD from deleting them, not a person.
 - Grafana Cloud sees a third node: the `k8s-monitoring` series count grows by roughly a third. Check it against the free tier's limit after the run.
 - `k3s-01` should fall to 75% memory or below once the heavy apps move. If it doesn't, the next lever is a `PreferNoSchedule` taint on `k3s-01`.
+- Traefik and CoreDNS each default to a single replica, so the step-12 drill still lost ingress and DNS for the ~5-minute eviction window when `k3s-01` went down. Traefik is fixed with a `HelmChartConfig` (2 replicas + hostname anti-affinity). CoreDNS has no chart hook, so it is manually scaled to 2 and re-applied by `install.sh` after every install/upgrade; the two CoreDNS pods are not anti-affined and could co-locate. Self-managing CoreDNS (`--disable coredns` + a 2-replica chart) remains the follow-up if co-location bites.
 
 ## In a team or enterprise setting
 Three or five control-plane nodes behind a load balancer or VIP is the normal shape. Workloads would run on dedicated worker pools, with control-plane nodes tainted. Placement would use node pools and resource quotas rather than per-app affinity. etcd would sit on fast local SSD with off-cluster snapshots.

@@ -20,7 +20,7 @@ blog: none
 | VM | Storage | Schedule | Mode | Compression | Retention |
 |---|---|---|---|---|---|
 | k3s-01 (VM 101) | `backup-on-pve02` | Daily 03:00 | Snapshot | ZSTD | keep-daily 7, keep-weekly 4 |
-| k3s-02 (VM 102) | `backup-on-pve01` | Daily 03:00 | Snapshot | ZSTD | keep-daily 7, keep-weekly 4 |
+| k3s-02 (VM 102) | `backup-on-pve01` | Daily 04:00 | Snapshot | ZSTD | keep-daily 7, keep-weekly 4 |
 | k3s-03 (VM 103) | `backup-on-pve01` | Daily 03:30 | Snapshot | ZSTD | keep-daily 7, keep-weekly 4 |
 
 Each VM backs up to the USB disk on **another** node (`pve03` has none and uses `pve01`'s), so a disk failure doesn't take the backups with it.
