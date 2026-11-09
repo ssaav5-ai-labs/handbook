@@ -20,7 +20,7 @@ related: [../../decisions/0013-two-nodes-without-qdevice.md, ../../decisions/001
    ```
    kubectl drain <node> --ignore-daemonsets --delete-emptydir-data
    ```
-2. Reboot the VM (or the Proxmox host — one at a time per [ADR-0013](../../decisions/0013-two-nodes-without-qdevice.md)).
+2. Reboot the VM (or the Proxmox host — one at a time per [ADR-0030](../../decisions/0030-three-node-proxmox-cluster.md)).
 3. Uncordon when back:
    ```
    kubectl uncordon <node>

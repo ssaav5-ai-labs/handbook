@@ -4,18 +4,21 @@ title: Add a third Proxmox node
 description: Check, install and join a new machine as pve03, with extra preparation for a Chromebox (MrChromebox UEFI firmware), then extend backups and k3s to it.
 domain: proxmox
 tags: [proxmox, cluster, quorum, chromebox, coreboot]
-status: draft
+status: active
 created: 2026-10-27
-updated: 2026-10-27
+updated: 2026-11-07
 visibility: public
 reuse: portable
-related: [reference-hardware.md, ../../decisions/0013-two-nodes-without-qdevice.md]
+related: [reference-hardware.md, ../../decisions/0013-two-nodes-without-qdevice.md, ../../decisions/0030-three-node-proxmox-cluster.md, ../../../playbooks/02b-third-node/PLAYBOOK.md]
 blog: candidate
 ---
 
 # Add a third Proxmox node
 
-Not run yet: the third machine isn't chosen. When it is, this becomes a step of a playbook run and gets corrected against reality.
+Steps 2 to 5 were done by Shawn on 2026-11-07 for `pve03`, a mini PC with an i7-12700T, 32 GB and two NVMe SSDs (no Chromebox, so step 1 was skipped). Step 6 is [playbook 02b](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/02b-third-node/PLAYBOOK.md). Lessons from that join:
+
+- A storage entry without a `nodes` list applies to every node. The cluster-wide `usb-backup` dir storage showed up as broken on `pve03`, which has no USB disk. Restrict node-local storage with `pvesm set <storage> --nodes <list>`.
+- A second disk that came with the machine may still hold the old OS (here a BitLocker partition). Check `lsblk -o NAME,SIZE,FSTYPE,MODEL` before deciding what to do with it, and wipe it only in a separate, deliberate step.
 
 ## Prerequisites
 - The machine has wired Ethernet, VT-x/AMD-V, at least 16 GB RAM, and an SSD of 256 GB or more (or room to fit one).
@@ -53,13 +56,13 @@ Hostname `pve03.<your-domain>`, the fixed address, gateway and DNS, the same sto
 `pve03` must have no VMs. On `pve03`: `pvecm add <pve01-ip>` (root password of `pve01`, accept its fingerprint). Don't add a QDevice: with three nodes Proxmox advises against one.
 
 ### 6. Extend the rest
-Re-run playbook 02: steps 4 to 8 pick up the new node (template `9003`, `k3s-03` in the OpenTofu map, its backups on `backup-on-pve01`). Then k3s grows to three servers: `k3s-03` joins as a server and `k3s-02` is rebuilt as one (etcd needs an odd number of members); see [add a k3s server](../k3s/howto-add-server.md).
+Run [playbook 02b](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/02b-third-node/PLAYBOOK.md): storage and backups for the new node, template `9003`, `k3s-03` in the OpenTofu map. Then k3s grows to three servers: `k3s-03` joins as a server and `k3s-02` is rebuilt as one (etcd needs an odd number of members); see [add a k3s server](../k3s/howto-add-server.md).
 
 ## Verify
-`pvecm status` on any node: `Nodes: 3`, `Expected votes: 3`, `Quorate: Yes`. Three green nodes in the web UI. Then the drill from playbook 02, step 3 should stay `Quorate: Yes` without `pvecm expected 1`.
+`pvecm status` on any node: `Nodes: 3`, `Expected votes: 3`, `Quorate: Yes`. Three green nodes in the web UI. Then shutting down any one node must leave the other two `Quorate: Yes` without `pvecm expected 1` (playbook 02b, step 1).
 
 ## Undo / rollback
 Before any VMs live on it: on another node, `pvecm delnode pve03` with `pve03` powered off, then reinstall it before it ever reconnects. A Chromebox goes back to ChromeOS by flashing the saved stock firmware with the same script.
 
 ## Related decisions
-[ADR-0013](../../decisions/0013-two-nodes-without-qdevice.md): two nodes without a QDevice until this happens.
+[ADR-0013](../../decisions/0013-two-nodes-without-qdevice.md): two nodes without a QDevice until this happens (superseded). [ADR-0030](../../decisions/0030-three-node-proxmox-cluster.md): the three-node cluster.
