@@ -126,7 +126,15 @@ Paste this into OpenCode from `/workspaces/homelab-infra`:
 1. List what is pinned to `k3s-02`: `kubectl get pv -o custom-columns=PV:.metadata.name,CLAIM:.spec.claimRef.name,NS:.spec.claimRef.namespace,NODE:.spec.nodeAffinity.required.nodeSelectorTerms[0].matchExpressions[0].values[0]`. Expect `hermes-data` and `data-postgres-0`. Ask about anything else.
 2. A PR in `homelab-gitops`: set the preferred node affinity of Hermes (it points at `k3s-02` since playbook 06), the gateway and Postgres to `homelab.io/size=large` (weight 100). Add the same affinity to the Argo CD repo-server and application-controller, and to the monitoring chart's Deployments (kube-state-metrics, the Alloy singleton). DaemonSets stay everywhere. Merge with CI green.
 3. Move each stateful app in turn. **Postgres is a human step** (scaling it to 0 kills the LLM gateway OpenCode uses), so it's done from a second shell while the agent is not relying on the gateway. **Hermes is a Deployment**, not a StatefulSet. Before deleting or moving any PVC, patch its PV to `reclaimPolicy: Retain` and take a safety tar of the volume folder.
-   - 🧑 Postgres (second shell): pause the `llm-gateway` app's automated sync, scale `statefulset/postgres` to 0, then follow step 4 to copy the data, then back up.
+   - 🧑 Postgres (second shell), the sequence actually run:
+     1. pause `root` and `llm-gateway` auto-sync;
+     2. patch the PV to `Retain`, take a safety tar of the old folder;
+     3. scale `statefulset/postgres` to 0, delete the PVC;
+     4. patch the `nodeSelector` to `homelab.io/size=large`;
+     5. scale to 1 then 0 so the new volume is created on `k3s-03`, clear the new folder with a path-guarded `find <new-folder> -mindepth 1 -delete`;
+     6. copy old→new with the step-4 tar pipe, scale to 1;
+     7. `kubectl -n llm-gateway rollout restart deploy/litellm`, `curl` the gateway for `200`;
+     8. turn `root` auto-sync back on.
    - Hermes (the agent):
      1. pauses automated sync on `root` first (it self-heals the child Applications and would undo the next patch), then pauses the `hermes` app (`kubectl -n argocd patch application hermes --type merge -p '{"spec":{"syncPolicy":{"automated":null}}}'`);
      2. scales `deploy/hermes` to 0, adds the `nodeSelector` (or the preferred `homelab.io/size=large` affinity) so it lands on `k3s-03`, and notes the old volume's folder (`kubectl get pv <pv> -o jsonpath='{.spec.local.path}{.spec.hostPath.path}'`);

@@ -4,9 +4,9 @@ title: Grow k3s to three servers with embedded etcd behind a kube-vip address, w
 description: k3s-03 joins on pve03 as a server and k3s-02 is rebuilt as one, so etcd has three members and survives losing any node; kube-vip gives the API one stable address, and big apps prefer the 12 GB k3s-03.
 domain: k3s
 tags: [k3s, etcd, high-availability, kube-vip, scheduling, capacity]
-status: proposed
+status: accepted
 created: 2026-11-07
-updated: 2026-11-07
+updated: 2026-11-09
 visibility: public
 reuse: portable
 related: [0015-k3s-embedded-etcd-server-and-agent.md, 0030-three-node-proxmox-cluster.md, ../domains/k3s/howto-add-server.md, ../../playbooks/02b-third-node/PLAYBOOK.md]

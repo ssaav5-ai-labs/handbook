@@ -35,9 +35,10 @@ With three servers behind kube-vip ([ADR-0031](../../decisions/0031-k3s-three-se
 - `kubectl` keeps answering through the VIP.
 - Pods on the other two nodes keep running.
 - DNS (CoreDNS, 2 replicas) and ingress (Traefik, 2 replicas, anti-affined) keep serving.
+- CoreDNS's 2 replicas are not anti-affined and k3s resets CoreDNS to 1 replica on restart, so after any k3s restart or upgrade re-run `k3s/install.sh` or `kubectl -n kube-system scale deploy/coredns --replicas=2`.
 
 **What goes down until the node is back:**
-- Pods that were on the rebooted node with no replica elsewhere (single-replica Deployments, `local-path` volumes) — the kubelet evicts them after ~5 minutes and reschedules them.
+- Pods that were on the rebooted node with no replica elsewhere (single-replica Deployments, `local-path` volumes) — the control plane evicts them (taint-based) after ~5 minutes and reschedules them.
 
 **Procedure:**
 1. Drain the node first if you want a controlled move (`kubectl drain <node> --ignore-daemonsets --delete-emptydir-data`).

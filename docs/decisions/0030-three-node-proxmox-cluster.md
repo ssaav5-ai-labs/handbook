@@ -4,9 +4,9 @@ title: Run Proxmox as a three-node cluster with normal quorum, no Proxmox HA, an
 description: pve03 (i7-12700T, 32 GB) joined pveCluster01, so quorum is automatic with three votes; failover stays in k3s rather than Proxmox HA, pve03's second NVMe becomes the LVM-thin pool nvme-data, and pve03's VMs back up to pve01's USB disk.
 domain: proxmox
 tags: [proxmox, cluster, quorum, storage, backups, capacity]
-status: proposed
+status: accepted
 created: 2026-11-07
-updated: 2026-11-07
+updated: 2026-11-09
 visibility: public
 reuse: portable
 related: [0013-two-nodes-without-qdevice.md, 0031-k3s-three-servers-behind-kube-vip.md, ../domains/proxmox/reference-hardware.md, ../domains/proxmox/reference-proxmox.md, ../domains/proxmox/runbook-node-down.md, ../../playbooks/02b-third-node/PLAYBOOK.md]
