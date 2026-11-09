@@ -4,7 +4,7 @@ title: Argo CD apps delete their resources; stateful data is kept
 description: Removing an app from Git cascades deletion of its resources through a resources finalizer, but PVCs and the postgres data they back survive with Delete=false annotations and a StatefulSet retention policy.
 domain: platform
 tags: [argo-cd, gitops, prune, delete-protection, pvc, stateful-data, postgres]
-status: proposed
+status: accepted
 created: 2026-11-09
 updated: 2026-11-09
 visibility: public
