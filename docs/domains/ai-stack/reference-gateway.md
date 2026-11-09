@@ -23,7 +23,7 @@ One endpoint for every agent and harness: a LiteLLM proxy container in front of 
 |---|---|
 | URL from Windows | `http://localhost:4000` |
 | URL from containers | `http://host.docker.internal:4000` (env `LLM_GATEWAY_URL`) |
-| URL on the LAN | `http://llm.192.168.86.211.nip.io/v1` (Traefik, HTTP) |
+| URL on the LAN | `http://llm.192.168.86.210.nip.io/v1` (Traefik, HTTP) |
 | URL in-cluster | `http://litellm.llm-gateway.svc:4000` |
 | Auth | `Authorization: Bearer $LITELLM_MASTER_KEY` (env `LLM_GATEWAY_KEY` in containers) |
 | Upstream key | `OPENROUTER_API_KEY`, only in SOPS (`platform/llm-gateway/secret.enc.yaml`) |

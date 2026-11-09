@@ -43,7 +43,7 @@ The k3s cluster was rebuilt from scratch (via playbook 03) and Argo CD needs to 
    ```bash
    kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d; echo
    ```
-   Log in at `https://argocd.192.168.86.211.nip.io`, change the password, delete the initial secret.
+   Log in at `https://argocd.192.168.86.210.nip.io`, change the password, delete the initial secret.
 
 5. Verify all applications are `Synced` and `Healthy`.
 

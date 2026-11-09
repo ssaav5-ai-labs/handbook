@@ -14,13 +14,13 @@ related: [reference-gateway.md, index.md, ../../../playbooks/05-monitoring-gatew
 
 # Fall back to the laptop gateway
 
-The cluster gateway (`homelab-gitops/platform/llm-gateway/`, `http://llm.192.168.86.211.nip.io/v1`)
+The cluster gateway (`homelab-gitops/platform/llm-gateway/`, `http://llm.192.168.86.210.nip.io/v1`)
 is primary. The laptop Compose gateway (`workstation/gateway/`) is the fallback.
 
 ## When to use it
 
 - The cluster is down or a `k3s-*` node is unavailable.
-- `http://llm.192.168.86.211.nip.io/v1` does not answer.
+- `http://llm.192.168.86.210.nip.io/v1` does not answer.
 - nip.io is down (the hostname will not resolve).
 
 ## Check which gateway a container uses
@@ -29,7 +29,7 @@ is primary. The laptop Compose gateway (`workstation/gateway/`) is the fallback.
 echo $LLM_GATEWAY_URL
 ```
 
-`http://host.docker.internal:4000` is the fallback; `http://llm.192.168.86.211.nip.io` is the cluster.
+`http://host.docker.internal:4000` is the fallback; `http://llm.192.168.86.210.nip.io` is the cluster.
 
 ## Fall back (cluster down)
 
@@ -62,7 +62,7 @@ curl -s -o /dev/null -w '%{http_code}\n' \
 In PowerShell:
 
 ```powershell
-setx LLM_GATEWAY_URL "http://llm.192.168.86.211.nip.io"
+setx LLM_GATEWAY_URL "http://llm.192.168.86.210.nip.io"
 ```
 
 Close and reopen PowerShell, recreate the container, and verify again. Then stop the fallback:
