@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: portable
 created: 2026-10-20
-updated: 2026-11-04
+updated: 2026-11-09
 ---
 
 # How an AI agent runs a playbook
@@ -42,6 +42,9 @@ From there the agent drives. The human answers questions and does the manual ste
 - **Human shell for secrets.** The human's shell is a second `ssh <repo>.devpod` (or the documented Docker fallback), not the agent's. Both shells share the folder: the agent creates the branch, the human only edits the SOPS file. Never tell the human to `git add`, `git commit --amend` or `git push -f`; after their edit, make a normal commit and push.
 - **SOPS paste hygiene.** Move the cursor to the value with the arrow keys before pasting. A paste at line 1 becomes a YAML key, and SOPS encrypts values only, so the secret lands in plaintext in a public repo. After saving, the human checks `head -3` (first line `apiVersion: v1`) and `grep -c 'sk-or'` is `0`; the agent runs `scripts/check-secrets.sh`.
 - **Never render or exec anything that decrypts.** No `kustomize build`, `ksops`, `sops decrypt`/`sops -d`, and no `kubectl exec` into a container that has secrets, not even to debug. Debug Argo CD sync failures from `kubectl -n argocd get application <app> -o yaml` status only; if a value is wrong, ask the human to re-edit.
+- **Never a placeholder inside a secret value.** Give the human the command that generates it (`openssl rand -hex 32`) and a check that prints only its shape (prefix, length). A placeholder in angle brackets once became the real value.
+- Every PR is opened with `--base main` (`gh pr create --base main`); delete setup branches after their merge, and check a merged PR's base with `gh pr view <n> --json baseRefName`.
+- Doc edits in a shared checkout (the handbook) go on a branch or a `git worktree` right away, never uncommitted on `main`.
 - Never push to `main`; open a PR. You may merge your own PRs with `gh pr merge --squash` once all required checks are green; never merge with failing or pending checks.
 - If reality differs from the playbook (a UI changed, a command fails), fix the run, then propose an edit to the playbook in the same PR. Playbooks improve every time they run.
 - If a command fails, read the error and diagnose before retrying. Never rerun the same command unchanged.
