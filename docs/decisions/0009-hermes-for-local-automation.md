@@ -4,14 +4,14 @@ title: Use Hermes Agent for local AI automations, sandboxed
 description: Hermes Agent runs local agentic automations through the LLM gateway, in a container, with reviewed skills and scoped credentials.
 domain: ai-stack
 tags: [hermes, automation, agents, security]
-status: proposed
+status: superseded
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-11-08
 visibility: public
 reuse: portable
 related: [../domains/ai-stack/index.md, 0008-vendor-neutral-ai-stack.md]
 supersedes: []
-superseded_by: []
+superseded_by: [0023-hermes-on-k3s-pod-as-sandbox.md]
 blog: candidate
 ---
 

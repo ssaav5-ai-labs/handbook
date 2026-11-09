@@ -6,10 +6,10 @@ domain: ai-stack
 tags: [llm, openrouter, litellm, hermes, crewai, langfuse, langsmith, agents]
 status: draft
 created: 2026-10-20
-updated: 2026-11-04
+updated: 2026-11-08
 visibility: public
 reuse: portable
-related: [../../decisions/0008-vendor-neutral-ai-stack.md, ../../decisions/0009-hermes-for-local-automation.md, ../../decisions/0010-langfuse-for-tracing-and-evals.md, ../../decisions/0022-llm-gateway-on-k3s.md, ../../decisions/0025-gateway-virtual-keys-with-postgres.md, reference-gateway.md, runbook-gateway-fallback.md]
+related: [../../decisions/0008-vendor-neutral-ai-stack.md, ../../decisions/0009-hermes-for-local-automation.md, ../../decisions/0010-langfuse-for-tracing-and-evals.md, ../../decisions/0022-llm-gateway-on-k3s.md, ../../decisions/0023-hermes-on-k3s-pod-as-sandbox.md, ../../decisions/0024-alerts-to-hermes-by-polling-then-in-cluster-webhook.md, ../../decisions/0025-gateway-virtual-keys-with-postgres.md, reference-gateway.md, reference-hermes.md, runbook-gateway-fallback.md, runbook-hermes.md, howto-promote-hermes-skill.md]
 blog: candidate
 ---
 
@@ -34,7 +34,7 @@ Every piece below can be swapped, because the stack only depends on open interfa
 flowchart TB
   subgraph Harnesses
     OC[OpenCode / Claude Code / others]
-    HE[Hermes Agent: local automations]
+    HE[Hermes Agent: chat operator, on k3s]
     CR[CrewAI: SRE management crews]
     FA[AI dev factory]
   end
@@ -43,8 +43,13 @@ flowchart TB
   LO[Ollama, local]
   OB[Langfuse: traces, cost, evals]
   MCP[MCP servers: kubectl, GitHub, handbook]
+  SL[Slack: DMs + homelab-alerts]
+  GC[Grafana Cloud: alerts]
   Harnesses --> GW --> OR & LO
   Harnesses --> MCP
+  HE <--> SL
+  GC --> SL
+  GC -. poll, read-only, every 2 min .-> HE
   GW -. OTel .-> OB
   Harnesses -. OTel .-> OB
 ```
@@ -65,15 +70,16 @@ flowchart TB
 - **Claude Code** remains an option, but through OpenRouter it only supports Anthropic models ([OpenRouter docs](https://openrouter.ai/docs/cookbook/coding-agents/claude-code-integration)). Treat it as one harness among several, never a dependency.
 - Playbooks, skills and `AGENTS.md` are written so any harness can run them.
 
-### 3. Local automation: Hermes Agent (recommended, with guardrails)
-See [ADR-0009](../../decisions/0009-hermes-for-local-automation.md). Fits well: MIT license, any provider including OpenRouter and custom endpoints (point it at the gateway), MCP, agentskills.io-compatible skills, built-in cron, chat gateways (Telegram, Slack, Discord and others), Docker/SSH terminal backends, native Windows ([repo](https://github.com/NousResearch/hermes-agent)).
+### 3. Local automation: Hermes Agent, running on k3s
+Hermes is the lab's chat operator ([ADR-0023](../../decisions/0023-hermes-on-k3s-pod-as-sandbox.md)): one pod on k3s, you DM it in Slack, and it posts a first diagnosis for Grafana Cloud alerts. See the [Hermes reference](reference-hermes.md), the [Hermes runbook](runbook-hermes.md), and [how to promote a Hermes-written skill](howto-promote-hermes-skill.md). This supersedes the earlier "local automation on the laptop" plan ([ADR-0009](../../decisions/0009-hermes-for-local-automation.md)).
 
-What to consider:
-- **Blast radius.** It's a long-running agent with broad permissions. Run it in a container, use the **Docker terminal backend**, keep command approval on, give it scoped tokens (read-only kubeconfig to start), and never your personal GitHub token.
-- **Self-written skills are knowledge.** Hermes writes skills from experience. Point its skills directory at a git repo and review them via PR, so learned skills become portable assets in the handbook rather than hidden state.
+Guardrails that matter:
+- **The pod is the sandbox.** Commands run in Hermes' own container; a read-only ServiceAccount (no Secrets, no `exec`, no writes) and a NetworkPolicy that keeps it off the home LAN. It **proposes** changes rather than making them.
+- **Policy comes from Git** through a read-only managed ConfigMap Hermes can't edit (model, approval mode, disabled toolsets, webhook routes).
+- **Approvals on:** dangerous commands wait for a "yes" in Slack; unattended sessions (cron, webhook) deny them outright.
+- **Skills are code, reviewed.** Hermes reads `homelab-agents` via git-sync; skills it writes wait for `/skills approve` and become a PR before they take effect.
+- **Alerts get a first diagnosis** by polling Grafana Cloud every 2 minutes — no inbound path, no model cost while quiet ([ADR-0024](../../decisions/0024-alerts-to-hermes-by-polling-then-in-cluster-webhook.md)).
 - **Memory lives in SQLite**, not Markdown. Treat it as a cache; anything worth keeping gets promoted to the handbook.
-- **Deterministic vs agentic.** Use plain cron/GitHub Actions for fixed jobs (backups, builds). Use Hermes when the job needs judgment (triage, summaries, "check the cluster and tell me what's odd").
-- **Young and fast-moving.** Pin versions and read release notes before updating.
 
 ### 4. SRE management agents: CrewAI
 Reasonable choice: open-source core, role-based crews map naturally to SRE roles (triager, investigator, scribe), and it supports many model providers. To stay portable:

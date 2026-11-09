@@ -4,9 +4,9 @@ title: Give each gateway client its own LiteLLM virtual key, stored in a small i
 description: The LLM gateway gets a single-replica Postgres in its namespace for virtual keys and spend logs; Hermes is the first client with its own key (cheap aliases only, monthly budget, rate limit), while OpenCode keeps the master key until the gateway has TLS.
 domain: ai-stack
 tags: [litellm, gateway, virtual-keys, postgres, budgets, k3s]
-status: proposed
+status: accepted
 created: 2026-11-01
-updated: 2026-11-01
+updated: 2026-11-08
 visibility: public
 reuse: portable
 related: [0008-vendor-neutral-ai-stack.md, 0022-llm-gateway-on-k3s.md, 0023-hermes-on-k3s-pod-as-sandbox.md, ../domains/ai-stack/reference-gateway.md]
@@ -32,6 +32,8 @@ Option 1: `postgres` (pinned Alpine image), 2 Gi `local-path`, small `shared_buf
 The first virtual key is `hermes`: aliases `fast` and `code` only, 5 USD per 30 days, 30 requests per minute. The human creates it with the master key in their own shell and puts it into Hermes' SOPS Secret; the agent never sees it. OpenCode keeps the master key for now.
 
 The database is **rebuilt, not backed up**: it holds keys and spend logs only. If it's lost, the keys are recreated with the same aliases and their new values go into SOPS; spend history lives on in Langfuse and Grafana Cloud.
+
+**Mount note (2026-11-08):** postgres 18 sets `PGDATA` to `/var/lib/postgresql/18/docker`, so the StatefulSet volume must mount at `/var/lib/postgresql` — not the pre-18 `/var/lib/postgresql/data`. Mounting the old path leaves the database on the pod's ephemeral storage, and a restart wipes every virtual key (this happened during playbook 06).
 
 ## Consequences
 - Hermes' spending has a hard cap of its own and a name in Langfuse and the gateway metrics; revoking it touches nothing else.
