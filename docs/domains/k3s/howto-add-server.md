@@ -4,18 +4,18 @@ title: Add a k3s server when a third Proxmox node joins
 description: Grow the k3s cluster from one server and one agent to three servers with embedded etcd, without rebuilding it.
 domain: k3s
 tags: [k3s, etcd, high-availability, kube-vip]
-status: draft
+status: active
 created: 2026-10-27
-updated: 2026-10-27
+updated: 2026-11-09
 visibility: public
 reuse: portable
-related: [../../decisions/0015-k3s-embedded-etcd-server-and-agent.md, ../proxmox/howto-add-node.md, ../../../playbooks/03-k3s/PLAYBOOK.md]
+related: [../../decisions/0031-k3s-three-servers-behind-kube-vip.md, ../proxmox/howto-add-node.md, ../../../playbooks/02b-third-node/PLAYBOOK.md]
 blog: candidate
 ---
 
 # Add a k3s server when a third Proxmox node joins
 
-Not run yet: there's no third node. When there is, this becomes a step of a playbook run and gets corrected against reality.
+Ran in playbook 02b (2026-11-09) and corrected against reality: `k3s-03` joined as a server and `k3s-02` was rebuilt as one. See the [playbook](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/02b-third-node/PLAYBOOK.md) for the current procedure.
 
 ## Prerequisites
 - The third Proxmox node has joined ([add a Proxmox node](../proxmox/howto-add-node.md)) and playbook 02 has been re-run, so `k3s-03` exists (one entry in the OpenTofu map) and is in the `vm_ips` output.

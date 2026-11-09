@@ -50,6 +50,7 @@ Hostname `pve03.<your-domain>`, the fixed address, gateway and DNS, the same sto
 - `ethtool <nic>`: `Speed: 1000Mb/s`, `Duplex: Full`.
 - `iperf3 -s` on `pve01`, `iperf3 -c <pve01-ip> -t 30` on `pve03`: about 900 Mbit/s or more.
 - `journalctl -k | grep -iE 'r8169|e1000e|link (is )?down'`: no link flaps under load. For a flaky Realtek NIC, look up the current fix for that chip before changing drivers.
+- If the NIC is Intel `e1000e` and it logs `Detected Hardware Unit Hang` / drops the link under load (on `pve03` this took etcd quorum down, since `k3s-03` runs there), disable the offloads: add `post-up /sbin/ethtool -K <nic> tso off gso off gro off` to its stanza in `/etc/network/interfaces`, then `ifreload -a`. Verify `iperf3` runs ~940 Mbit/s with 0 hangs.
 - Pull the power cable and plug it back in: the box must power on by itself.
 
 ### 5. Join

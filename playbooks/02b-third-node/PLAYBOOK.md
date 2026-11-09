@@ -66,7 +66,7 @@ Paste this into OpenCode from `/workspaces/homelab-infra`:
 **Actions:** the agent prints these for you to run:
 - On any node: `pvesm set usb-backup --nodes pve01,pve02` and `pvesm set backup-on-pve01 --nodes pve02,pve03`.
 - On `pve01`: add `pve03`'s address (`192.168.86.203`) to the `/mnt/usb-backup` line in `/etc/exports`, with the same options as `pve02`'s entry, then `exportfs -ra` and `exportfs -v`.
-**Verify:** on `pve03`, `pvesm status` shows no error, `backup-on-pve01` is `active` and `usb-backup` isn't listed. `touch /mnt/pve/backup-on-pve01/.w && rm /mnt/pve/backup-on-pve01/.w` succeeds.
+**Verify:** on `pve03`, `pvesm status` shows no error and `backup-on-pve01` is `active`; `usb-backup` shows `disabled` there (expected — it's restricted to `pve01,pve02`). `touch /mnt/pve/backup-on-pve01/.w && rm /mnt/pve/backup-on-pve01/.w` succeeds.
 **Record:** [reference-proxmox](../../docs/domains/proxmox/reference-proxmox.md) (backup storage table).
 
 ### 3. Wipe the second NVMe and create `nvme-data` 🧑
@@ -115,7 +115,7 @@ Paste this into OpenCode from `/workspaces/homelab-infra`:
 
 ### 8. Join k3s-03 as a server
 **Why:** the first new etcd member, on the node with room.
-**Actions:** `ssh debian@192.168.86.213 'sudo bash -s' < k3s/prepare-node.sh`, add `k3s-03 server` to `k3s/nodes.conf`, `k3s/install.sh k3s-03`. Then `kubectl label node k3s-03 homelab.io/size=large`.
+**Actions:** `ssh debian@192.168.86.213 'sudo bash -s' < k3s/prepare-node.sh`, add `k3s-03 server` to `k3s/nodes.conf`, `k3s/install.sh k3s-03`. Then `kubectl label node k3s-03 homelab.io/size=large`. Also update the Hermes NetworkPolicy in `homelab-gitops` so its egress lists every k3s server IP (`192.168.86.211`, `.212`, `.213`).
 **Verify:** `kubectl get nodes -o wide` shows `k3s-03` `Ready` with `control-plane,etcd` roles; `kubectl get nodes -l homelab.io/size=large` lists it. The cluster now has two etcd members, which tolerate no failure, so carry on with steps 9 and 10 in the same sitting.
 **Record:** journal.
 
@@ -125,10 +125,13 @@ Paste this into OpenCode from `/workspaces/homelab-infra`:
 **Actions:**
 1. List what is pinned to `k3s-02`: `kubectl get pv -o custom-columns=PV:.metadata.name,CLAIM:.spec.claimRef.name,NS:.spec.claimRef.namespace,NODE:.spec.nodeAffinity.required.nodeSelectorTerms[0].matchExpressions[0].values[0]`. Expect `hermes-data` and `data-postgres-0`. Ask about anything else.
 2. A PR in `homelab-gitops`: set the preferred node affinity of Hermes (it points at `k3s-02` since playbook 06), the gateway and Postgres to `homelab.io/size=large` (weight 100). Add the same affinity to the Argo CD repo-server and application-controller, and to the monitoring chart's Deployments (kube-state-metrics, the Alloy singleton). DaemonSets stay everywhere. Merge with CI green.
-3. Move each stateful app in turn, Postgres first, then Hermes. The agent:
-   1. pauses automated sync on `root` first (it self-heals the child Applications and would undo the next patch), then on the app (`kubectl -n argocd patch application <app> --type merge -p '{"spec":{"syncPolicy":{"automated":null}}}'`), and scales the app to 0 (`kubectl -n <ns> scale statefulset/postgres --replicas=0` or `deploy/hermes`);
-   2. notes the old volume's folder (`kubectl get pv <pv> -o jsonpath='{.spec.local.path}{.spec.hostPath.path}'`), deletes the PVC (the `Delete=false` annotation from ADR-0032 only stops Argo CD, not `kubectl`) and its PV if it stays `Released`;
-   3. syncs the app once (`kubectl -n argocd patch application <app> --type merge -p '{"operation":{"sync":{}}}'`) so Argo CD recreates the PVC, still without automated sync; scales to 1 so the new volume is created on `k3s-03`, then back to 0 and notes the new folder.
+3. Move each stateful app in turn. **Postgres is a human step** (scaling it to 0 kills the LLM gateway OpenCode uses), so it's done from a second shell while the agent is not relying on the gateway. **Hermes is a Deployment**, not a StatefulSet. Before deleting or moving any PVC, patch its PV to `reclaimPolicy: Retain` and take a safety tar of the volume folder.
+   - 🧑 Postgres (second shell): pause the `llm-gateway` app's automated sync, scale `statefulset/postgres` to 0, then follow step 4 to copy the data, then back up.
+   - Hermes (the agent):
+     1. pauses automated sync on `root` first (it self-heals the child Applications and would undo the next patch), then pauses the `hermes` app (`kubectl -n argocd patch application hermes --type merge -p '{"spec":{"syncPolicy":{"automated":null}}}'`);
+     2. scales `deploy/hermes` to 0, adds the `nodeSelector` (or the preferred `homelab.io/size=large` affinity) so it lands on `k3s-03`, and notes the old volume's folder (`kubectl get pv <pv> -o jsonpath='{.spec.local.path}{.spec.hostPath.path}'`);
+     3. patches the PV to `Retain` and takes a safety tar of the old folder, then deletes the PVC (the `Delete=false` annotation from ADR-0032 only stops Argo CD, not `kubectl`) and its PV if it stays `Released`;
+     4. does a one-off sync (`kubectl -n argocd patch application hermes --type merge -p '{"operation":{"sync":{}}}'`) so Argo CD recreates the PVC on `k3s-03`, still without automated sync; scales to 1 so the new volume is created, then back to 0 and notes the new folder.
 4. 🧑 You copy the data in your own shell, old folder to new. Nothing is printed:
    `ssh -i ~/.ssh/homelab debian@192.168.86.212 "sudo tar -C <old-folder> -cpf - ." | ssh -i ~/.ssh/homelab debian@192.168.86.213 "sudo tar -C <new-folder> -xpf -"`
 5. The agent scales the app back up, then turns automated sync back on for `root`, which restores the app's own policy from Git. `kubectl rollout restart` the moved Deployments (Argo CD, monitoring) so they reschedule.
@@ -142,6 +145,7 @@ Paste this into OpenCode from `/workspaces/homelab-infra`:
 2. `kubectl drain k3s-02 --ignore-daemonsets --delete-emptydir-data`, `kubectl delete node k3s-02`.
 3. `tofu apply -replace='proxmox_virtual_environment_vm.k3s["k3s-02"]'` (check the address with `tofu state list`).
 4. `prepare-node.sh` on it, `k3s-02 server` in `nodes.conf`, `k3s/install.sh k3s-02`.
+5. Confirm the Hermes NetworkPolicy still lists every k3s server IP (`.211`, `.212`, `.213` — the rebuild keeps `k3s-02`'s address).
 **Verify:** `kubectl get nodes -l node-role.kubernetes.io/etcd=true` lists three nodes, all `Ready`; `k3s/smoke/run.sh` passes; every Argo CD app is `Synced` and `Healthy`.
 **Record:** journal.
 
@@ -153,7 +157,7 @@ Paste this into OpenCode from `/workspaces/homelab-infra`:
 
 ### 12. Failure drill and the monitoring budget 🧑
 **Why:** prove the cluster survives losing a server, and that a third node still fits Grafana Cloud's free tier.
-**You do:** in the `pve01` shell, `qm shutdown 101`. The agent runs `kubectl get nodes` and `kubectl -n argocd get applications` through the VIP: both answer, and `k3s-01` goes `NotReady`. Then `qm start 101`.
+**You do:** in the `pve01` shell, `qm shutdown 101`. The drill checks are run by the **human** (the agent loses the gateway when `k3s-01` is down), so you run `kubectl get nodes` and `kubectl -n argocd get applications` through the VIP: both answer, and `k3s-01` goes `NotReady`. For DNS, use a full FQDN with busybox `nslookup` (e.g. `nslookup kubernetes.default.svc.cluster.local` — busybox needs the full name). Then `qm start 101`.
 **Actions:** after the restart, `kubectl get nodes` shows three `Ready`. In Grafana Cloud (🧑, **Administration → Usage insights** or the billing dashboard), active series are below the free tier's limit with room to spare.
 **Verify:** both checks passed.
 **Record:** journal.

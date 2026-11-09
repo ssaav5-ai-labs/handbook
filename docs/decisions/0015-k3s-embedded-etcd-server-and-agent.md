@@ -11,7 +11,7 @@ visibility: public
 reuse: portable
 related: [0013-two-nodes-without-qdevice.md, 0016-zram-swap-on-k3s-nodes.md, ../domains/k3s/howto-add-server.md, ../../playbooks/03-k3s/PLAYBOOK.md]
 supersedes: []
-superseded_by: []
+superseded_by: [0031-k3s-three-servers-behind-kube-vip.md]
 blog: candidate
 ---
 
