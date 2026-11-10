@@ -210,11 +210,12 @@ If you're resuming an earlier run, say so: the agent checks each step's Verify f
   T=$(read -rsp 'crews MCP token: ' t; echo "$t"); echo
   curl -s localhost:8000/mcp -H "Authorization: Bearer $T" -H 'Content-Type: application/json' \
     -H 'Accept: application/json, text/event-stream' \
+    -H 'Host: sre-crews.sre.svc:8000' \
     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"check","version":"0"}}}' | head -c 300; echo
   curl -s -o /dev/null -w '%{http_code}\n' localhost:8000/mcp -H 'Content-Type: application/json' -d '{}'
   kill %1
   ```
-  The first answer names the server; the second (no token) prints `401`. Paste only those two outputs to the agent.
+  The first answer names the server; the second (no token) prints `401`. Paste only those two outputs to the agent. Note: the DNS-rebinding guard's `allowed_hosts` are the Service hostnames, so a port-forward (`localhost`) needs the explicit `Host:` header above; without it the server answers `Invalid Host header`.
 - From a throwaway pod in another namespace, `kubectl run -n default nettest --rm -it --image=curlimages/curl --restart=Never -- curl -s -m 5 http://sre-crews.sre.svc:8000/healthz` times out (only `hermes` may connect).
 - The logs show both sidecars' tools loaded and no write tools: `kubectl -n sre logs deploy/sre-crews -c crews | grep -iE 'mcp|tools' | tail -10`. If a tool name in the static filter doesn't exist, the log says so; fix the filter in `homelab-agents` (new image, new digest, PR).
 - `kubectl top pod -n sre --containers` at rest.
