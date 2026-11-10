@@ -241,16 +241,16 @@ If you're resuming an earlier run, say so: the agent checks each step's Verify f
         resources: false
         prompts: false
   ```
-  Check each key against the pinned Hermes version's `website/docs/reference/mcp-config-reference.md` (the utility-tool switches are named there). **Check that the managed scope honours `mcp_servers`**: playbook 06 found v0.22.7 ignores `skills.external_dirs` there, and the `seed` initContainer writes it into `/opt/data/config.yaml` with `hermes config set` instead. If `hermes mcp list` (Verify) doesn't show `crews`, do the same for this block and record it; the token stays a `${CREWS_MCP_TOKEN}` reference either way.
+  Check each key against the pinned Hermes version's `website/docs/reference/mcp-config-reference.md` (the utility-tool switches are named there). **Check that the managed scope honours `mcp_servers`**: playbook 06 found v0.22.7 ignores `skills.external_dirs` there, and the `seed` initContainer writes it into `/opt/data/config.yaml` with `hermes config set` instead. The managed scope **does** honour `mcp_servers` (`hermes mcp list` shows `crews` connected), so no `seed` fallback is needed; the token stays a `${CREWS_MCP_TOKEN}` reference either way.
 - `platform/hermes/secret.enc.yaml`: 🧑 add `CREWS_MCP_TOKEN` (the same value as in step 5) with `sops edit`, quoted. "done". After the merge, 🧑 `kubectl -n hermes rollout restart deploy/hermes`.
 - `homelab-agents`, `hermes-skills/alert-triage/SKILL.md` (version `0.2.0`): for `warning` and `critical` alerts, call `investigate_alert` with the alert's labels, annotations, `startsAt` and `generatorURL`, then post the crew's report as it is, prefixed with "Crew report:"; if the tool errors, times out or says "busy", do the playbook 06 checks yourself and say the crew wasn't available. For `info` alerts and `LabSilent`, the 06 path. `metadata.hermes.requires_toolsets` gains `mcp-crews`. As playbook 06 learned: quote every `description`, and no inline interpreters (`python3 -c`) in a skill, or every run waits for an approval; `scripts/check-skills.sh` checks both. New skill `hermes-skills/capacity-report/SKILL.md`: call `weekly_capacity_report`, post the table, end with "Proposals only: open a PR in homelab-gitops to apply."
 - PRs in both repos, `ci` green, squash-merge both, `git checkout main && git pull`, refresh `root`. Hermes restarts (its managed ConfigMap changed); git-sync brings the skills within five minutes.
-- The alert cron job needs the new toolset: 🧑 run `kubectl -n hermes exec deploy/hermes -c hermes -- hermes cron edit --help` and paste it; the agent gives you the command that adds `mcp-crews` to `grafana-alerts`' toolsets, you run it, and the agent writes it into `platform/hermes/cron-jobs.md` (PR). A job that names a toolset whose server never connected is blocked before any model call, so `hermes cron list` shows `blocked_config` if the connection is wrong.
+- The alert cron job needs the new toolset. v0.22.7 has no `cron` toolset flag or subcommand — a cron job inherits toolsets from its skills' `requires_toolsets`, and the 0.2.0 `alert-triage` skill already declares `mcp-crews`, so there is nothing to run (confirm with `hermes cron edit --help`). The agent records this in `platform/hermes/cron-jobs.md` (PR). A job that names a toolset whose server never connected is blocked before any model call; `hermes cron doctor` surfaces `blocked_config`.
 
 **Verify:**
 - 🧑 `kubectl -n hermes exec deploy/hermes -c hermes -- hermes mcp list` shows `crews` connected with three tools (paste the output). If it isn't connected, `kubectl -n hermes logs deploy/hermes -c hermes | grep -i mcp | tail` and the crews' logs (401 = token mismatch; timeout = NetworkPolicy).
 - 🧑 DM Hermes: "Use find_runbook for node down." It quotes the handbook's node-down runbook. Then (with a real pod name from `kubectl -n monitoring get pods`): "Investigate this as if it were an alert: alertname KubePodCrashLooping, namespace monitoring, pod <that pod>, severity warning." A good report says the pod is healthy. The crew's report arrives in one to four minutes. 🧑 In Langfuse: the `crews` key's traces for that run (count the calls) and Hermes' own trace around them.
-- 🧑 `hermes cron list` (via `exec`) shows `grafana-alerts` with `mcp-crews` and no `blocked_config` after two runs.
+- 🧑 `hermes cron doctor` (via `exec`) reports `grafana-alerts` healthy, and `hermes cron list` shows no `blocked_config` after two runs (v0.22.7's `cron list` does not show toolsets).
 
 **Record:** `reference-hermes.md`: the `crews` MCP server, its trust setting, and the fallback rule. `reference-sre-crews.md`: one investigation's calls, time and cost. Journal.
 
@@ -266,7 +266,7 @@ If you're resuming an earlier run, say so: the agent checks each step's Verify f
     "Use the capacity-report skill and post the result." \
     --skill capacity-report --deliver "slack:<#homelab-alerts channel ID>" --name capacity-report
   ```
-  plus the `mcp-crews` toolset as in step 6. Add the command to `platform/hermes/cron-jobs.md` (PR).
+  The `capacity-report` skill already declares `requires_toolsets: [mcp-crews]`, so no toolset flag is needed (as in step 6). Add the command to `platform/hermes/cron-jobs.md` (PR).
 - 🧑 Run it once now (`hermes cron run capacity-report` through `exec`, or the pinned version's equivalent).
 
 **Verify:** The report arrives in Slack with real numbers for all three nodes; 🧑 spot-check two rows against Grafana Explore (the peak) and `kubectl describe` (the request). Wrong numbers mean a wrong query: fix the crew, not the report.
