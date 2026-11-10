@@ -8,7 +8,7 @@ status: draft
 visibility: public
 reuse: portable
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-10
 related: [index.md, reference-gateway.md, reference-hermes.md, ../../decisions/0027-crewai-crews-as-mcp-tools.md, ../../decisions/0028-agent-read-access-through-upstream-mcp-sidecars.md, ../../decisions/0029-agent-writes-only-through-an-approval-gated-mcp-server.md]
 blog: candidate
 ---
@@ -67,6 +67,7 @@ One **analyst** agent (`code`, both MCP servers). Compares each workload's reque
 - Image built by CI in `homelab-agents` (workflow `image.yml`), tagged `ghcr.io/ssaav5-ai-labs/sre-crews:sha-<short>`, public, pinned by digest in `homelab-gitops`.
 - First image: `ghcr.io/ssaav5-ai-labs/sre-crews:sha-1085cd0@sha256:25044f0d8e66eb60f2b570bc742d9af25b54729b172b5e472bfdfbb77b2b23e9` (built 2026-11-09), public, 631.4 MiB compressed (9 layers).
 - Second image: `ghcr.io/ssaav5-ai-labs/sre-crews:sha-c3bc01f@sha256:70076cb2ce73ebb001d7f4690d8e3501e632e5752e1c2b3271889283762f9c06` (built 2026-11-10) — fixes the Grafana alerting tool name.
+- Third image: `ghcr.io/ssaav5-ai-labs/sre-crews:sha-62da16d@sha256:03b2931bd9c5f3fc3535582c1635971aca19628f7b26dba18de8821cf7683c89` (built 2026-11-10) — the tool handlers `await crew.kickoff_async()` so FastMCP can call them from inside its event loop.
 - New version reaches the cluster: merge → `image.yml` → digest → PR in `homelab-gitops`.
 
 ### Tool names (mcp-grafana v2.2.0)
@@ -98,3 +99,25 @@ Four containers share the pod's network but not its credentials (ADR-0028):
 | k8s-mcp | 10m / 64 Mi | 192 Mi | 20 Mi |
 | grafana-mcp | 10m / 48 Mi | 128 Mi | 17 Mi |
 | git-sync | 10m / 32 Mi | 96 Mi | 12 Mi |
+
+## A run, measured (2026-11-10)
+
+The step 6 `investigate_alert` DM (a synthetic `KubePodCrashLooping` in `monitoring`,
+a healthy pod):
+
+- DM at 18:33:01 → report at 18:34:32, ~1.5 minutes, correct and in the `alert-triage`
+  format (the report said the pod was healthy).
+- Cost: the `crews` gateway key spend went `0.0 → 0.066169` USD; Hermes' own key went
+  `0.7789 → 0.8026` (+0.024).
+- Langfuse traced ~10 crew model calls: 1 triager, 6 investigator, 2 context
+  summaries, 1 scribe.
+
+### Follow-ups
+
+- **Langfuse can't separate keys.** Every call shows `default_user_id`, so the per-key
+  cost above came from LiteLLM's `/key/list` spend, not Langfuse. To fix, set the
+  request user field per client so Langfuse attributes traces to the `crews` vs
+  `hermes` key.
+- **The investigator hit context summarization** (2 of its calls were context
+  summaries). Consider limiting `pods_log` to fewer lines so the investigator's
+  evidence-gathering fits in context without summarising.
