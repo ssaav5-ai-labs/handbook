@@ -55,6 +55,7 @@ Each client gets its own key with per-key model lists, budgets and rate limits, 
 |---|---|---|---|---|
 | master | OpenCode, dev containers | all | 115 USD/30d (global) | none |
 | hermes | Hermes Agent | fast, code | 5 USD/30d | 30 |
+| crews | SRE crews | fast, code | 5 USD/30d | 20 |
 
 ### Create a key
 
