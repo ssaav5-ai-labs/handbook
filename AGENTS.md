@@ -15,6 +15,7 @@ When asked to run a playbook, follow `playbooks/RUNNING.md`. When writing a new 
 - Journal: `docs/journal/YYYY/YYYY-MM-DD-<slug>.md`. Append, never rewrite past entries.
 - ADRs: next free number, `docs/decisions/NNNN-<slug>.md`, `status: proposed` until Shawn accepts it. Never edit an accepted ADR except to set `status: superseded` and `superseded_by`.
 - Prefer updating an existing how-to/runbook over creating a near-duplicate.
+- Adding, removing or renaming a top-level folder, a `docs/` section or a domain? Update the *Handbook layout* tree in `docs/meta/knowledge-system.md` in the same PR (and its repo map when a repo is created).
 
 ## Models and harnesses
 - Call models only through the LLM gateway (`$LLM_GATEWAY_URL`) using aliases `fast`, `code`, `reason`, `local`. Never hard-code a vendor model ID or API in a repo; see ADR-0008.

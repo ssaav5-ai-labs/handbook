@@ -7,7 +7,7 @@ status: active
 reuse: portable
 visibility: public
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-11-11
 ---
 
 # How this knowledge system works
@@ -32,17 +32,18 @@ updated: 2026-10-20
 
 ## Repo map (GitHub organization)
 
-| Repo | Visibility | Holds |
-|---|---|---|
-| `handbook` | public | This knowledge base, site and blog |
-| `.github` | public | Org profile, issue/PR templates, shared workflows |
-| `workstation` | public | Base dev container, LLM gateway and local AI services (compose), dotfiles |
-| `github-config` | public | Org settings, teams, rulesets as code |
-| `homelab-infra` | public | Proxmox (VM templates, provisioning), k3s install |
-| `homelab-gitops` | public | Argo CD app-of-apps: platform (Argo CD, observability, ingress, certs) and apps |
-| `ai-factory` | public | Reusable agents, factory pipelines, evals |
-| `<product>` | per product | One repo per dev project/product, created after the factory exists |
-| `career-vault` | **private, personal account** | Raw journal, reflections, drafts, anything not public-safe |
+| Repo | Visibility | Status | Holds |
+|---|---|---|---|
+| `handbook` | public | live | This knowledge base, site and blog |
+| `workstation` | public | live | Base dev container, LLM gateway and local AI services (compose), dotfiles |
+| `homelab-infra` | public | live | Proxmox (VM templates, provisioning), k3s install |
+| `homelab-gitops` | public | live | Argo CD app-of-apps: platform (Argo CD, observability, ingress, certs) and apps |
+| `homelab-agents` | public | live | Hermes' reviewed skills and the CrewAI SRE crews (MCP server), deployed by `homelab-gitops` |
+| `.github` | public | planned | Org profile, issue/PR templates, shared workflows |
+| `github-config` | public | planned | Org settings, teams, rulesets as code |
+| `ai-factory` | public | planned | Reusable agents, factory pipelines, evals |
+| `<product>` | per product | planned | One repo per dev project/product, created after the factory exists |
+| `career-vault` | **private, personal account** | live | Raw journal, reflections, drafts, anything not public-safe |
 
 Every code repo has the same shape: `README.md`, `AGENTS.md` (points to the handbook), `CLAUDE.md` (one line, `@AGENTS.md`), `playbooks/` (how the repo gets built, AI-first), `.agents/skills/` (harness-neutral Agent Skills, copied to harness-specific folders by `scripts/sync-skills.sh`) and `.devcontainer/` (the environment every agent and human works in). Repos are created when the work starts, not up front. Names are proposals until an ADR accepts them.
 
@@ -58,7 +59,8 @@ All clones live in a path that mirrors where they come from, so it scales across
     │   ├── workstation/
     │   ├── homelab-infra/
     │   ├── homelab-gitops/
-    │   └── ai-factory/
+    │   ├── homelab-agents/
+    │   └── ai-factory/           # when it exists
     └── <your-username>/
         └── career-vault/
 ```
@@ -69,30 +71,50 @@ A future employer becomes `~/code/github.example-corp.com/...` next to it, and s
 
 ```
 handbook/
+├── README.md                 # front door for humans on GitHub
 ├── AGENTS.md                 # rules for AI agents working in this repo
+├── CLAUDE.md                 # one line, @AGENTS.md
 ├── mkdocs.yml                # site + blog + llms.txt
+├── requirements.txt          # site build dependencies (MkDocs pinned)
+├── opencode.json             # OpenCode permissions (ask/deny rules for secrets)
+├── .devcontainer/            # the environment agents and humans work in
+├── .github/                  # CODEOWNERS, docs.yml (gitleaks, build, Pages)
+├── .agents/skills/           # harness-neutral Agent Skills (canonical)
+├── .opencode/skills/         # skills OpenCode loads, e.g. open-knowledge
+├── .ok/  .okignore           # OpenKnowledge editor config and index exclusions
+├── scripts/                  # sync-skills.sh copies .agents/skills to harness folders
 ├── templates/                # one template per doc type
-└── docs/
+├── playbooks/                # AI-first setup playbooks for this lab
+│   ├── RUNNING.md            # the protocol an agent follows to run one
+│   └── NN-<name>/PLAYBOOK.md
+└── docs/                     # everything the site publishes
     ├── index.md
     ├── meta/                 # how the system works (this file)
     ├── decisions/            # ADRs, numbered, never deleted
     ├── open-questions/       # decisions not yet made
     ├── journal/YYYY/         # dated work log, the raw capture
+    ├── playbooks/            # catalog of every playbook across repos
     ├── domains/              # living docs per area
     │   ├── workstation/
     │   ├── github/
     │   ├── proxmox/
     │   ├── k3s/
-    │   ├── platform/         # Argo CD, observability, ingress, certs
+    │   ├── platform/         # Argo CD, observability, ingress, certs, secrets
     │   ├── ai-stack/         # LLM gateway, harnesses, Hermes, CrewAI, factory tooling
     │   ├── ai-factory/
     │   └── products/
     ├── patterns/             # role-agnostic, reusable know-how
     ├── inventory/            # hardware, versions, IP plan (placeholders)
-    └── blog/posts/           # public write-ups
+    └── blog/                 # index.md; posts/ is created with the first post
 ```
 
-Each domain folder holds whatever doc types it needs: `index.md` (overview), `setup-*.md` (how-tos), `runbook-*.md`, `reference-*.md`. The doc type lives in frontmatter, so folders can be reorganized without losing meaning.
+Not in Git (`.gitignore`), so you may see them locally but never on GitHub: `site/` (the `mkdocs build` output; CI builds its own), `.runs/` (exported agent sessions for review), `.claude/skills/` (generated by `scripts/sync-skills.sh`), `.obsidian/` (editor state), `.env` and `.gateway-key` (secrets).
+
+Playbook *sources* live in `playbooks/` at the repo root because agents run them; `docs/playbooks/` only holds the published catalog that links to them.
+
+Each domain folder holds whatever doc types it needs: `index.md` (overview), `howto-*.md`, `runbook-*.md`, `reference-*.md`. The doc type lives in frontmatter, so folders can be reorganized without losing meaning.
+
+**Keep this tree current.** Any change that adds, removes or renames a top-level folder, a `docs/` section or a domain updates this tree in the same PR.
 
 ## Doc types
 
