@@ -49,7 +49,7 @@ Three agents in a row (`Process.sequential`), `memory=False`, `max_rpm=20`, ever
 3. **Scribe** (`fast`, no tools) — writes the report in playbook 06 `alert-triage` format.
 
 ### weekly_capacity_report
-One **analyst** agent (`code`, both MCP servers). Compares each workload's requests with 7-day peak usage, proposes right-sizing by the playbook 05 step 9 rule (limit ≥ 2× request and ≥ peak + 128 Mi). Proposes only.
+Deterministic, not an agent: the tool fetches pods and 7-day peaks through a direct loopback MCP client, computes the table in Python, and the LLM (`code`) writes only the one-line verdict. Proposes right-sizing by the playbook 05 step 9 rule (limit ≥ 2× request and ≥ peak + 128 Mi). On any fetch failure it returns `capacity report unavailable: <which>` and no table. Proposes only.
 
 ## Limits
 
@@ -90,6 +90,7 @@ Four containers share the pod's network but not its credentials (ADR-0028):
 - RBAC: `ClusterRoleBinding sre-crews-reader` → the existing `hermes-reader` ClusterRole (get/list/watch; no Secrets/ConfigMaps/exec).
 - NetworkPolicy: default-deny; ingress on 8000 from Hermes only; egress to DNS, the gateway (`litellm` on 4000), the API server, and the internet on 443 (Grafana Cloud, GitHub). No path to `lab-actions`.
 - Namespace enforces `pod-security.kubernetes.io/enforce: restricted`; every container `readOnlyRootFilesystem`, `allowPrivilegeEscalation: false`, capabilities dropped, non-root.
+- `k8s-mcp` runs `list_output = "yaml"` (was `table`) so `resources_list` returns full pod specs for the deterministic capacity report. Trade-off: a pod spec's literal `env` `value:` fields now reach the model's context when the investigator reads a pod (`pods_get`/`resources_get` already returned YAML). Secret values are not exposed — they stay `secretKeyRef` references — but plain env values are visible.
 
 ## Memory at rest (2026-11-10)
 
