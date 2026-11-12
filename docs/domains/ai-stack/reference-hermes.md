@@ -6,7 +6,7 @@ domain: ai-stack
 tags: [hermes, agents, slack, grafana-cloud, skills, k3s, argocd]
 status: draft
 created: 2026-11-04
-updated: 2026-11-10
+updated: 2026-11-12
 visibility: public
 reuse: lab-specific
 blog: none
@@ -19,7 +19,9 @@ Hermes is the lab operator assistant: you DM it in Slack, it checks the cluster 
 ## Where skills live
 
 - Reviewed skills: https://github.com/ssaav5-ai-labs/homelab-agents, hermes-skills/
-- git-sync sidecar pulls main every 5 minutes into /git/current/hermes-skills/ (read-only)
+- git-sync sidecar pulls main every 5 minutes into a worktree under `/git` (read-only), and an `--exechook-command` mirrors `hermes-skills/` into a stable `/skills` emptyDir (`cp -R` per skill dir, deleting dirs no longer upstream).
+- `skills.external_dirs` points at `/skills` (set by the `seed` init container), not `/git/current`. Hermes resolves the external-dir path once and caches it, so pointing at the git-sync worktree symlink left a stale path after git-sync swapped the `--link` target and deleted the old worktree — the "Skill not found" bug.
+- The copy hook must not preserve attributes on the root-owned `/skills` mount: the first version used `cp -a`, which tried to set timestamps on `/skills` and failed with EPERM (git-sync runs as UID 65533), so it retried every 3s and git-sync never advanced. Plain `cp -R` per skill dir avoids touching the mount's own metadata.
 - Hermes writes new skills into /opt/data/skills/ with write_approval on; promote by PR
 
 ## How a skill reaches Hermes

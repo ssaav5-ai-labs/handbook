@@ -8,7 +8,7 @@ status: draft
 visibility: public
 reuse: portable
 created: 2026-11-09
-updated: 2026-11-10
+updated: 2026-11-12
 related: [index.md, reference-gateway.md, reference-hermes.md, ../../decisions/0027-crewai-crews-as-mcp-tools.md, ../../decisions/0028-agent-read-access-through-upstream-mcp-sidecars.md, ../../decisions/0029-agent-writes-only-through-an-approval-gated-mcp-server.md]
 blog: candidate
 ---
@@ -49,7 +49,7 @@ Three agents in a row (`Process.sequential`), `memory=False`, `max_rpm=20`, ever
 3. **Scribe** (`fast`, no tools) — writes the report in playbook 06 `alert-triage` format.
 
 ### weekly_capacity_report
-Deterministic, not an agent: the tool fetches pods and 7-day peaks through a direct loopback MCP client, computes the table in Python, and the LLM (`code`) writes only the one-line verdict. Proposes right-sizing by the playbook 05 step 9 rule (limit ≥ 2× request and ≥ peak + 128 Mi). On any fetch failure it returns `capacity report unavailable: <which>` and no table. Proposes only.
+Deterministic, not an agent: the tool fetches pods and 7-day peaks through a direct loopback MCP client, computes the table in Python, and the LLM (`code`) writes only the one-line verdict. Per-node totals are summed in code (the verdict reads the same number the footer prints, so they can't drift; a node with no reclaimable workloads is absent). Peaks are grouped by workload (a ReplicaSet/StatefulSet's pods fold into one row by ownerReferences, so a rollout doesn't split one workload's peak). Proposes right-sizing by the playbook 05 step 9 rule (limit ≥ 2× request and ≥ peak + 128 Mi). On any fetch failure it returns `capacity report unavailable: <which>` and no table. Proposes only.
 
 ## Limits
 
@@ -68,7 +68,9 @@ Deterministic, not an agent: the tool fetches pods and 7-day peaks through a dir
 - First image: `ghcr.io/ssaav5-ai-labs/sre-crews:sha-1085cd0@sha256:25044f0d8e66eb60f2b570bc742d9af25b54729b172b5e472bfdfbb77b2b23e9` (built 2026-11-09), public, 631.4 MiB compressed (9 layers).
 - Second image: `ghcr.io/ssaav5-ai-labs/sre-crews:sha-c3bc01f@sha256:70076cb2ce73ebb001d7f4690d8e3501e632e5752e1c2b3271889283762f9c06` (built 2026-11-10) — fixes the Grafana alerting tool name.
 - Third image: `ghcr.io/ssaav5-ai-labs/sre-crews:sha-62da16d@sha256:03b2931bd9c5f3fc3535582c1635971aca19628f7b26dba18de8821cf7683c89` (built 2026-11-10) — the tool handlers `await crew.kickoff_async()` so FastMCP can call them from inside its event loop.
-- New version reaches the cluster: merge → `image.yml` → digest → PR in `homelab-gitops`.
+- Fourth image: `ghcr.io/ssaav5-ai-labs/sre-crews:sha-25a5b53@sha256:7f54d7e9ce9b1bb488292f02b75a810caf3d79a5b1dcdb5091ef9d6c3f7df765` (built 2026-11-11) — `parse_peaks` accepts the bare-array response shape mcp-grafana v2.2.0 returns for the peaks query (the old parser expected a wrapped object and silently got no data).
+- Fifth image: `ghcr.io/ssaav5-ai-labs/sre-crews:sha-8cb54ed@sha256:f1462215c6474e780e97c8f7ee60e3b1abb6e1617a48ba046dc07ed0d34cd62b` (built 2026-11-12) — per-node totals summed in code (verdict total can't disagree with the table) and peaks grouped by workload (rollout pods folded, no suffix-stripping).
+- New version reaches the cluster: merge → `image.yml` → digest → PR in `homelab-gitops`. **Pin the digest from the registry** (the manifest's `docker-content-digest`, e.g. the GHCR package API), not the build-push-action Post step — that prints the runner's local digest, which is not what the registry serves.
 
 ### Tool names (mcp-grafana v2.2.0)
 
