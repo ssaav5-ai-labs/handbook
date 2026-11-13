@@ -9,7 +9,7 @@ created: 2026-10-20
 updated: 2026-11-13
 visibility: public
 reuse: portable
-related: [../../decisions/0008-vendor-neutral-ai-stack.md, ../../decisions/0009-hermes-for-local-automation.md, ../../decisions/0010-langfuse-for-tracing-and-evals.md, ../../decisions/0022-llm-gateway-on-k3s.md, ../../decisions/0023-hermes-on-k3s-pod-as-sandbox.md, ../../decisions/0024-alerts-to-hermes-by-polling-then-in-cluster-webhook.md, ../../decisions/0025-gateway-virtual-keys-with-postgres.md, reference-gateway.md, reference-hermes.md, reference-sre-crews.md, runbook-gateway-fallback.md, runbook-hermes.md, runbook-sre-crews.md, howto-promote-hermes-skill.md]
+related: [../../decisions/0008-vendor-neutral-ai-stack.md, ../../decisions/0009-hermes-for-local-automation.md, ../../decisions/0010-langfuse-for-tracing-and-evals.md, ../../decisions/0022-llm-gateway-on-k3s.md, ../../decisions/0023-hermes-on-k3s-pod-as-sandbox.md, ../../decisions/0024-alerts-to-hermes-by-polling-then-in-cluster-webhook.md, ../../decisions/0025-gateway-virtual-keys-with-postgres.md, reference-gateway.md, reference-hermes.md, reference-sre-crews.md, runbook-gateway-fallback.md, runbook-hermes.md, runbook-sre-crews.md, howto-promote-hermes-skill.md, design-job-search.md]
 blog: candidate
 ---
 
@@ -88,6 +88,7 @@ Two small CrewAI crews run on k3s, called by Hermes as MCP tools ([ADR-0027](../
 Reasonable choice: open-source core, role-based crews map naturally to SRE roles (triager, investigator, scribe), and it supports many model providers. To stay portable:
 - Put the real capabilities in **MCP servers and skills** (query metrics, read runbooks). CrewAI only orchestrates them, so moving to LangGraph or another framework later doesn't mean rewriting tools.
 - Watch for its limits on long-running, stateful, human-in-the-loop workflows; LangGraph is the usual alternative. This is tracked as an open question.
+- The same pattern runs a personal **job-search** crew (proposed): it reads job-alert emails, scores and drafts into the private career vault, and Hermes in Slack asks before every write. Nothing touches LinkedIn. See the [design](design-job-search.md) and [ADR-0036](../../decisions/0036-job-search-agent-finds-human-applies.md).
 
 ### 5. AI dev factory: LangSmith vs Langfuse
 **LangSmith is an observability and evaluation platform, not a factory.** It's proprietary; only its SDKs are MIT, and self-hosting needs an Enterprise contract. The open framework from the same company is **LangGraph**.
