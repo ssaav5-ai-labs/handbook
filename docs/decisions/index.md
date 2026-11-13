@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: portable
 created: 2026-10-20
-updated: 2026-11-09
+updated: 2026-11-13
 ---
 
 # Decision log
@@ -42,3 +42,6 @@ updated: 2026-11-09
 | [0030](0030-three-node-proxmox-cluster.md) | Three-node Proxmox cluster: normal quorum, no Proxmox HA, `nvme-data` thin pool on pve03 (supersedes 0013) | proxmox | accepted |
 | [0031](0031-k3s-three-servers-behind-kube-vip.md) | k3s grows to three servers with embedded etcd behind kube-vip; heavy apps prefer k3s-03 (supersedes 0015) | k3s | accepted |
 | [0032](0032-argo-cd-apps-delete-resources-stateful-data-kept.md) | Argo CD apps delete their resources; stateful data is kept | platform | accepted |
+| [0027](0027-crewai-crews-as-mcp-tools.md) | CrewAI crews as MCP tools, exposed to Hermes | ai-stack | accepted |
+| [0028](0028-agent-read-access-through-upstream-mcp-sidecars.md) | Agent read access through upstream MCP sidecars | ai-stack | accepted |
+| [0029](0029-agent-writes-only-through-an-approval-gated-mcp-server.md) | Agent writes only through an approval-gated MCP server | ai-stack | accepted |

@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: portable
 created: 2026-10-20
-updated: 2026-11-09
+updated: 2026-11-13
 ---
 
 # Playbook catalog
@@ -24,7 +24,7 @@ Each playbook is a few manual steps plus one prompt. See [how the agent runs the
 | 04  | [Argo CD from Git (app-of-apps), secrets with SOPS + age](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/04-argocd/PLAYBOOK.md)                                     | homelab-gitops                 | 03         | done 2026-10-29 |
 | 05  | [Monitoring with Grafana Cloud, the LLM gateway on k3s, traces to Langfuse Cloud](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/05-monitoring-gateway/PLAYBOOK.md) | homelab-gitops                 | 04         | done 2026-11-04 |
 | 06  | Hermes on k3s (sandboxed)                                                                                                                                                           | homelab-gitops, homelab-agents | 05         | done 2026-11-08 |
-| 07  | SRE management agents (CrewAI over MCP tools)                                                                                                                                       | homelab-agents                 | 05         | planned         |
+| 07  | [SRE management agents (CrewAI over MCP tools)](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/07-sre-crews/PLAYBOOK.md)                                                                                                                               | homelab-agents, homelab-gitops | 06         | done 2026-11-13 |
 | 08  | AI dev factory                                                                                                                                                                      | ai-factory                     | 05         | planned         |
 
 06's skills live in `homelab-agents`; `homelab-gitops` deploys both 06 and 07. 07's code lives in `homelab-agents` (not `ai-factory`).
