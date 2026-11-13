@@ -8,8 +8,8 @@ status: draft
 visibility: public
 reuse: portable
 created: 2026-11-09
-updated: 2026-11-12
-related: [index.md, reference-gateway.md, reference-hermes.md, ../../decisions/0027-crewai-crews-as-mcp-tools.md, ../../decisions/0028-agent-read-access-through-upstream-mcp-sidecars.md, ../../decisions/0029-agent-writes-only-through-an-approval-gated-mcp-server.md]
+updated: 2026-11-13
+related: [index.md, reference-gateway.md, reference-hermes.md, runbook-sre-crews.md, ../../decisions/0027-crewai-crews-as-mcp-tools.md, ../../decisions/0028-agent-read-access-through-upstream-mcp-sidecars.md, ../../decisions/0029-agent-writes-only-through-an-approval-gated-mcp-server.md]
 blog: candidate
 ---
 
@@ -56,6 +56,7 @@ Deterministic, not an agent: the tool fetches pods and 7-day peaks through a dir
 - One crew run at a time; a second concurrent call returns "busy" immediately.
 - Request timeout 60s per model call; crew max 240s.
 - The crews' gateway key budget and RPM are in `reference-gateway.md`.
+- The `crews` key `max_budget: 5.0` over 30 days — ~150 investigations per window at $0.03 each. See the [runbook](runbook-sre-crews.md) for the `/key/update` procedure.
 
 ## Memory (spike, 2026-11-09)
 
@@ -117,10 +118,6 @@ a healthy pod):
 
 ### Follow-ups
 
-- **Langfuse can't separate keys.** Every call shows `default_user_id`, so the per-key
-  cost above came from LiteLLM's `/key/list` spend, not Langfuse. To fix, set the
-  request user field per client so Langfuse attributes traces to the `crews` vs
-  `hermes` key.
-- **The investigator hit context summarization** (2 of its calls were context
-  summaries). Consider limiting `pods_log` to fewer lines so the investigator's
-  evidence-gathering fits in context without summarising.
+- **Langfuse key-alias separation resolved.** The `attributes.litellm.key_alias` metadata field (from LiteLLM's `langfuse_otel` callback) carries the virtual-key alias (`crews` / `hermes`) on every observation. Filter by this field in the Langfuse UI or export to separate per-key spend. The earlier `default_user_id` issue was resolved upstream.
+- **The investigator hit context summarisation** (2 of its calls were context summaries). Consider limiting `pods_log` to fewer lines so the investigator's evidence-gathering fits in context without summarising.
+- **Sidecar port names deduplicated** (2026-11-13, #80). `k8s-mcp` and `grafana-mcp` init containers had duplicate `name: mcp` ports, which printed a warning on scale events. Renamed to `k8s-mcp` / `grafana-mcp`.
