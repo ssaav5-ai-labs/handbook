@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: lab-specific
 created: 2026-10-20
-updated: 2026-11-09
+updated: 2026-11-13
 ---
 
 # Open questions
@@ -39,3 +39,6 @@ updated: 2026-11-09
 | Site generator after MkDocs Material's maintenance ends (Nov 5, 2026) | meta | Stay on MkDocs 1.6.1 (pinned); evaluate Zensical | Zensical blog/plugin parity |
 | Third Proxmox node | proxmox | `pve03`, i7-12700T, 32 GB, joined 2026-11-07 | [ADR-0030](../decisions/0030-three-node-proxmox-cluster.md) |
 | What to do with pve03's spare ~17 GB | proxmox | Keep free until Backstage (playbook 08) is sized; candidates: grow `k3s-03`, self-host Langfuse (ADR-0012) or VictoriaMetrics (ADR-0021) | After playbook 08 |
+| The crew's k8s-mcp can't read `applications.argoproj.io` — no way to check Argo CD app health from within a crew | ai-stack | | |
+| Hermes' fallback when `investigate_alert` errors is untested — drill 5a's self-heal was too fast to catch the crew-down window | ai-stack | | |
+| Drill 6 (budget) is untested — walked through the scenario but never fired a real budget exhaustion | ai-stack | | |

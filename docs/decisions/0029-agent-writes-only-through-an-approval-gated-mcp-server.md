@@ -4,7 +4,7 @@ title: Let agents change the cluster only through a separate, approval-gated MCP
 description: Crews and Hermes stay read-only; the lab's write actions live in a small lab-actions MCP server with its own narrow ServiceAccount, reachable only from Hermes, which marks it untrusted so every call needs a human "Allow once" in Slack and unattended sessions can't call it. The first action restarts a Deployment's pods in allow-listed namespaces.
 domain: ai-stack
 tags: [mcp, hermes, approvals, rbac, security, agents, argocd]
-status: proposed
+status: accepted
 created: 2026-11-04
 updated: 2026-11-13
 visibility: public

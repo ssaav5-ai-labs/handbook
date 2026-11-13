@@ -4,9 +4,9 @@ title: Build the SRE crews with CrewAI, give them abilities only through MCP ser
 description: The lab's SRE automation is a small set of CrewAI crews in homelab-agents, packaged as one MCP server that Hermes calls; the crews' abilities come from MCP servers, so the orchestration framework can be replaced without rewriting tools.
 domain: ai-stack
 tags: [crewai, langgraph, mcp, agents, sre, hermes]
-status: proposed
+status: accepted
 created: 2026-11-04
-updated: 2026-11-09
+updated: 2026-11-13
 visibility: public
 reuse: portable
 related: [0008-vendor-neutral-ai-stack.md, 0023-hermes-on-k3s-pod-as-sandbox.md, 0025-gateway-virtual-keys-with-postgres.md, 0028-agent-read-access-through-upstream-mcp-sidecars.md, 0029-agent-writes-only-through-an-approval-gated-mcp-server.md]
