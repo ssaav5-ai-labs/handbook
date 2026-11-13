@@ -26,5 +26,6 @@ Each playbook is a few manual steps plus one prompt. See [how the agent runs the
 | 06  | Hermes on k3s (sandboxed)                                                                                                                                                           | homelab-gitops, homelab-agents | 05         | done 2026-11-08 |
 | 07  | [SRE management agents (CrewAI over MCP tools)](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/07-sre-crews/PLAYBOOK.md)                                                                                                                               | homelab-agents, homelab-gitops | 06         | done 2026-11-13 |
 | 08  | AI dev factory                                                                                                                                                                      | ai-factory                     | 05         | planned         |
+| 09  | [Job-search agent: finds and drafts, you apply](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/09-job-search/PLAYBOOK.md) | homelab-agents, homelab-gitops | 07 | planned |
 
 06's skills live in `homelab-agents`; `homelab-gitops` deploys both 06 and 07. 07's code lives in `homelab-agents` (not `ai-factory`).

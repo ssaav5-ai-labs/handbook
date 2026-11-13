@@ -1,7 +1,7 @@
 ---
 type: explanation
 title: Job-search agent design
-description: How the human-approved job-search agent works - inputs, the job-search MCP server and CronJob, Hermes in Slack, the career-vault layout, privacy controls, cost, open questions and the outline of the playbook that will build it.
+description: How the human-approved job-search agent works - inputs, the job-search MCP server and CronJob, Hermes in Slack, the career-vault layout, privacy controls, cost, open questions and how playbook 09 builds it.
 domain: ai-stack
 tags: [job-search, agents, crewai, hermes, mcp, slack, obsidian, privacy]
 status: draft
@@ -119,24 +119,13 @@ About 40 alerts a day, about 15 left after rules, about 2k tokens each on `fast`
 
 | Question | Options | Leaning |
 |---|---|---|
-| How alerts reach the agent | (a) dedicated mailbox fed by a filter from my main mailbox, IMAP + app password; (b) Gmail API read-only on my main mailbox; (c) paste-only in Slack | (a) with a **new Gmail account**: IMAP with an app password (needs 2-Step Verification) is the simplest; Yahoo also allows app passwords; Outlook.com no longer accepts passwords over IMAP and needs an OAuth app registration and token refresh. The credential can only ever see job alerts; (c) always works alongside |
+| How alerts reach the agent | (a) a new Gmail used only for alerts, read over IMAP with an app password, fed by forwarding; (b) Gmail API on a main mailbox; (c) paste in Slack | (a) plus (c). The LinkedIn account's email is on Yahoo, where automatic forwarding may need Yahoo Mail Plus: if so, either pay for it, or send other boards' alerts straight to the new Gmail and share LinkedIn roles by hand. Never read the Yahoo mailbox itself, and don't make the alert mailbox the LinkedIn primary email (password resets). Gmail and Yahoo allow app passwords; Outlook.com needs OAuth |
 | Where the agent writes drafts | `main` under `job-search/` (Obsidian sees them at once) vs a `job-search` branch I merge | `main`: drafts are private and reversible, and a branch adds friction every day |
 | Company watchlist | Also poll a short list of target companies' public ATS boards daily | Later, once the alert-based flow is tuned |
 | More sources | Alert emails from other boards (no work); boards with an official API or RSS (e.g. Adzuna, remote-focused boards), each checked against its terms first. No paid LinkedIn plan adds an API for job seekers, so Premium Career stays a human-side tool | Add alert emails now, APIs after the first week |
 | Daily post time and cap | 07:30, top five | As proposed, adjust after a week |
 | Interview prep | A `prep_interview(role_id)` tool that drafts likely questions and STAR stories from the vault | Next iteration |
 
-## Playbook outline (later, not run)
+## How it gets built
 
-A future playbook in the handbook (number assigned when written; Backstage is next). It depends on playbooks 06 (Hermes) and 07 (SRE crews).
-
-**Before you start 🧑:** create the job-alerts mailbox and its app password; add the forwarding filter; set up LinkedIn job alerts (titles, locations, daily); create the private `#job-search` channel and invite Hermes; write a first `profile.md` and `cv.md` in the vault; create a write deploy key on `career-vault`.
-
-1. **Vault scaffold**: create `job-search/` folders, templates and the Obsidian Base. Verify: Base shows an example role.
-2. **Alert parser**: a parser for LinkedIn and one other board, tested on three saved alert emails (scrubbed). Verify: unit tests pass in `homelab-agents` CI.
-3. **Rules and scorer**: rules from `profile.md`, `fast` scoring with JSON validation. Verify: on ten saved roles I've rated by hand, the scorer agrees on the top three.
-4. **Gateway key**: `jobs` virtual key, no-retention providers, message logging off, budget. Verify: a test call shows in Langfuse with no prompt text.
-5. **CronJob + digest**: `career` namespace, AppProject, SOPS secrets, NetworkPolicy, CronJob. Verify: a manual run writes today's digest; an egress test to linkedin.com fails.
-6. **MCP server + drafting crew**: tools above, Checker step. Verify: `draft_application` on a saved role produces a draft whose `⚠ Check` box catches a planted false claim.
-7. **Hermes wiring**: server in managed config with `trust: untrusted`, NetworkPolicy, daily and Friday crons, a `job-search` skill for the thread replies. Verify: the daily post arrives; `draft 2` asks Allow once; Deny writes nothing.
-8. **One week live**: measure cost and noise, tune `profile.md`, close the open questions with ADRs, journal, and a blog post draft.
+[Playbook 09](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/09-job-search/PLAYBOOK.md) builds it in an order that doesn't need the mailbox until the end: vault scaffold and profile, the `jobs` gateway key, the code, a check of the scorer against ten roles rated by hand, the deployment, Hermes in Slack, the Friday pipeline, then the daily email feed (deferrable), drills and finish.
