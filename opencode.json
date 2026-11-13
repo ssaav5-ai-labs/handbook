@@ -4,17 +4,41 @@
     "gateway": {
       "npm": "@ai-sdk/openai-compatible",
       "name": "LLM gateway",
-      "options": { "baseURL": "{env:LLM_GATEWAY_URL}/v1", "apiKey": "{env:LLM_GATEWAY_KEY}" },
+      "options": {
+        "baseURL": "{env:LLM_GATEWAY_URL}/v1",
+        "apiKey": "{env:LLM_GATEWAY_KEY}"
+      },
       "models": {
-        "fast":   { "name": "fast",   "limit": { "context": 200000, "output": 8000 } },
-        "code":   { "name": "code",   "limit": { "context": 200000, "output": 8000 } },
-        "reason": { "name": "reason", "limit": { "context": 200000, "output": 8000 } }
+        "fast": {
+          "name": "fast",
+          "limit": {
+            "context": 200000,
+            "output": 8000
+          }
+        },
+        "code": {
+          "name": "code",
+          "limit": {
+            "context": 200000,
+            "output": 8000
+          }
+        },
+        "reason": {
+          "name": "reason",
+          "limit": {
+            "context": 200000,
+            "output": 8000
+          }
+        }
       }
     }
   },
   "model": "gateway/code",
   "permission": {
-    "external_directory": { "/knowledge/handbook/**": "allow", "/tmp/agent/**": "allow" },
+    "external_directory": {
+      "/knowledge/handbook/**": "allow",
+      "/tmp/agent/**": "allow"
+    },
     "bash": {
       "*": "allow",
       "rm *": "ask",
@@ -37,38 +61,78 @@
       "kubectl * get secret *": "ask",
       "kubectl * get secrets *": "ask",
       "env": "deny",
-        "printenv": "deny",
-        "printenv *": "deny",
-        "kubectl exec*": "deny",
-        "kubectl * exec *": "deny",
-        "kubectl cp*": "deny",
-        "*kustomize build*": "ask",
-        "*ksops*": "deny",
-        "sops *": "deny",
-        "gh auth token*": "deny",
-        "git push -f*": "deny",
-        "git push --force*": "deny",
-        "gh pr merge*": "allow"
-      },
-      "read": {
+      "printenv": "deny",
+      "printenv *": "deny",
+      "kubectl exec*": "deny",
+      "kubectl * exec *": "deny",
+      "kubectl cp*": "deny",
+      "*kustomize build*": "ask",
+      "*ksops*": "deny",
+      "sops *": "deny",
+      "gh auth token*": "deny",
+      "git push -f*": "deny",
+      "git push --force*": "deny",
+      "gh pr merge*": "allow",
+      "kubectl apply *": "ask",
+      "kubectl * apply *": "ask",
+      "kubectl create *": "ask",
+      "kubectl * create *": "ask",
+      "kubectl delete *": "ask",
+      "kubectl * delete *": "ask",
+      "kubectl patch *": "ask",
+      "kubectl * patch *": "ask",
+      "kubectl edit *": "ask",
+      "kubectl * edit *": "ask",
+      "kubectl replace *": "ask",
+      "kubectl * replace *": "ask",
+      "kubectl scale *": "ask",
+      "kubectl * scale *": "ask",
+      "kubectl rollout restart *": "ask",
+      "kubectl * rollout restart *": "ask",
+      "kubectl run *": "ask",
+      "kubectl * run *": "ask",
+      "kubectl label *": "ask",
+      "kubectl * label *": "ask",
+      "kubectl annotate *": "ask",
+      "kubectl * annotate *": "ask",
+      "kubectl cordon *": "ask",
+      "kubectl uncordon *": "ask",
+      "kubectl drain *": "ask",
+      "kubectl set *": "ask",
+      "kubectl * set *": "ask",
+      "kubectl -n argocd annotate application * argocd.argoproj.io/refresh=*": "allow",
+      "kubectl -n hermes exec deploy/hermes -c hermes -- hermes cron *": "ask",
+      "kubectl -n hermes exec deploy/hermes -c hermes -- hermes skills list": "ask",
+      "kubectl -n hermes exec deploy/hermes -c hermes -- hermes config get *": "ask",
+      "docker manifest inspect *": "allow",
+      "docker buildx imagetools inspect *": "allow",
+      "rm -rf /tmp/agent/*": "allow",
+      "rm * *..*": "ask",
+      "*--admin*": "deny",
+      "*--allow-empty*": "deny"
+    },
+    "read": {
       "*": "allow",
-        "*.env": "deny",
-        "bootstrap/versions.env": "allow",
-        "*.env.*": "deny",
+      "*.env": "deny",
+      "bootstrap/versions.env": "allow",
+      "*.env.*": "deny",
       "*.tfvars": "deny",
       "*/.kube/config": "deny",
       "*/k3s.yaml": "deny",
       "*keys.txt": "deny",
-        "*/.sops-age/*": "deny",
-        "~/.config/gh/**": "deny",
-        "**/hosts.yml": "deny"
-      }
+      "*/.sops-age/*": "deny",
+      "~/.config/gh/**": "deny",
+      "**/hosts.yml": "deny"
+    }
   },
   "mcp": {
     "open-knowledge": {
       "type": "local",
       "enabled": true,
-      "command": ["ok", "mcp"]
+      "command": [
+        "ok",
+        "mcp"
+      ]
     }
   }
 }

@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: portable
 created: 2026-10-20
-updated: 2026-11-11
+updated: 2026-11-13
 ---
 
 # How an AI agent runs a playbook
@@ -47,10 +47,15 @@ From there the agent drives. The human answers questions and does the manual ste
 - Every PR is opened with `--base main` (`gh pr create --base main`); delete setup branches after their merge, and check a merged PR's base with `gh pr view <n> --json baseRefName`.
 - Doc edits in a shared checkout (the handbook) go on a branch or a `git worktree` right away, never uncommitted on `main`.
 - If a run adds, removes or renames a handbook folder (top level, a `docs/` section or a domain), update the *Handbook layout* tree in `docs/meta/knowledge-system.md` in the same PR.
-- Never push to `main`; open a PR. You may merge your own PRs with `gh pr merge --squash` once all required checks are green; never merge with failing or pending checks.
+- Never push to `main`; open a PR. You may merge your own PRs with `gh pr merge --squash` once all required checks are green; never merge with failing or pending checks. Never use `gh pr merge --admin` (it bypasses the ruleset) and never push an empty commit to re-run CI; use `gh run rerun <run-id> --failed`. Wait for checks with `gh pr checks <n> --watch --fail-fast`, not `sleep` loops.
 - If reality differs from the playbook (a UI changed, a command fails), fix the run, then propose an edit to the playbook in the same PR. Playbooks improve every time they run.
 - If a command fails, read the error and diagnose before retrying. Never rerun the same command unchanged.
 - If a step's answer changes an accepted ADR, stop and propose a superseding ADR instead of silently diverging.
 - A step isn't done until its Verify passed. If a tool call errors (an edit that didn't apply, a command that failed), say so and fix it before reporting the step complete.
 - Journal edits append. Never replace an existing section of the journal, even when updating "Next".
 - Look a version up on its releases page before pinning it. Don't pin from memory.
+- **Never retype an identifier.** Digests, commit SHAs, job and session IDs, UIDs and tokens are copied by a command from their source (registry header, `gh`, `kubectl -o jsonpath`), never typed from memory or from a context summary. After a context compaction, re-read every identifier from its source before using it. A digest carried through a summary once came back with seven characters scrambled and broke two pods.
+- **A denied command is an answer.** If a permission rule denies or the human rejects a command, stop and ask; don't build a second route to the same result (a stub `ksops`, a downloaded binary, a token pulled from `gh`). The same rule binds Hermes (`SOUL.md`).
+- **Cluster writes go through Git.** The agent reads the cluster freely, but changes it only through a PR that Argo CD syncs. The few direct writes a run needs (deleting a pod the agent's own PR broke, a throwaway test pod, an Argo CD refresh) are proposed with `ask`, and `kubectl apply` of anything is the human's (`bootstrap/install.sh`). Test pods go in `default` and are deleted in the same command (`kubectl run … --rm`).
+- **Commit messages from a file.** Write the message with the edit tool and commit with `git commit -F <file>`. A message passed inline (`-m "$(cat <<EOF …)"`) is matched against the deny rules and gets blocked when it mentions a protected name such as `versions.env` or `ksops`.
+- **One session per step group.** Start a fresh agent session every two or three steps and hand over through the journal (it holds state, IDs and next steps). A four-day single session (playbook 07: 11 compactions) loses detail at each compaction; the journal doesn't.
