@@ -45,3 +45,4 @@ updated: 2026-11-13
 | [0027](0027-crewai-crews-as-mcp-tools.md) | CrewAI crews as MCP tools, exposed to Hermes | ai-stack | accepted |
 | [0028](0028-agent-read-access-through-upstream-mcp-sidecars.md) | Agent read access through upstream MCP sidecars | ai-stack | accepted |
 | [0029](0029-agent-writes-only-through-an-approval-gated-mcp-server.md) | Agent writes only through an approval-gated MCP server | ai-stack | accepted |
+| [0036](0036-job-search-agent-finds-human-applies.md) | Job search: the agent finds and drafts from job-alert emails, never submits; the human applies | career | proposed |
