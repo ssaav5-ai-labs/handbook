@@ -83,15 +83,16 @@ Hermes lists the server with `trust: untrusted` in its managed config, as for th
 Three agents, sequential, `memory=False`, like `investigate_alert`:
 
 1. **Analyst** (`fast`): pulls the role's must-haves and the five things it cares about most.
-2. **Writer** (`reason`): a tailored CV summary (5–6 lines), three bullet rewrites, a cover note under 200 words. Only from `cv.md` and `profile.md`.
-3. **Checker** (`fast`): lists every claim in the draft with the CV line that supports it; unsupported claims go in a `⚠ Check` box at the top. Salary, right to work, notice period and availability are always `[[YOU FILL]]`.
+2. **Writer** (`reason`): a tailored CV summary (5–6 lines), three bullet rewrites, a cover note under 200 words. Starts from the CV variant that fits the role (`general` or `ai`, by a rule in `profile.md`) and names it as the one to attach; claims only from the CV files and `profile.md`.
+3. **Checker** (`fast`): lists every claim in the draft with the CV file and line that supports it, and flags facts that differ between variants; unsupported claims go in a `⚠ Check` box at the top. Salary, right to work, notice period and availability are always `[[YOU FILL]]`.
 
 ## Career-vault layout (private)
 
 ```
 career-vault/job-search/
 ├── profile.md            # criteria, rubric weights, exclusions (frontmatter + prose)
-├── cv.md                 # the source of truth for every claim
+├── cv/originals/*.docx   # the CVs you edit and attach (general, ai)
+├── cv/general.md, cv/ai.md # converted with pandoc; same facts, different emphasis; the source of every claim
 ├── digests/2026-11-14.md # everything triaged that day, with scores (dedupe source)
 ├── roles/<id>.md         # one per role I act on; frontmatter is the tracker
 └── drafts/<id>.md        # CV summary, bullets, cover note, ⚠ Check box
