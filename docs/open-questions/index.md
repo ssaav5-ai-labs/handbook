@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: lab-specific
 created: 2026-10-20
-updated: 2026-11-09
+updated: 2026-11-13
 ---
 
 # Open questions
@@ -20,7 +20,7 @@ updated: 2026-11-09
 | Where Hermes runs | ai-stack | On k3s as its own pod (no Docker socket); the laptop has no room (8 GB) | [ADR-0023](../decisions/0023-hermes-on-k3s-pod-as-sandbox.md) (accepted) |
 | Virtual key for OpenCode | ai-stack | Move OpenCode to its own virtual key once the gateway has TLS; it keeps the master key until then | Playbook 06 |
 | Default coding harness | ai-stack | OpenCode (any model); Claude Code optional | Playbook 00 |
-| SRE agent framework: CrewAI vs LangGraph | ai-stack | CrewAI, with tools as MCP servers so it stays swappable | Playbook 07 |
+| SRE agent framework: CrewAI vs LangGraph | ai-stack | CrewAI, with tools as MCP servers so it stays swappable | [ADR-0027](../decisions/0027-crewai-crews-as-mcp-tools.md) (accepted) |
 | Uses for the Raspberry Pi 3s | proxmox | Uptime Kuma for outside-the-cluster checks; DNS later. No QDevice (ADR-0013) | After playbook 05 |
 | AI factory architecture | ai-factory | | After platform is up |
 | Proxmox provisioning | proxmox | OpenTofu (bpg/proxmox) + cloud-init template | [ADR-0014](../decisions/0014-provision-proxmox-vms-opentofu-bpg-provider.md) |
@@ -34,11 +34,13 @@ updated: 2026-11-09
 | k3s control-plane metrics (scheduler, controller manager, etcd) | k3s | Off for now; expose with k3s server flags if a problem needs them (mind the 10k-series budget) | When needed |
 | Self-manage CoreDNS with anti-affinity (k3s re-creates it with 1 replica on restart; `install.sh` re-scales it) | k3s | Later; `install.sh` re-scales the embedded CoreDNS to 2 replicas for now (not anti-affined, so it could co-locate) | |
 | Grafana Cloud contact points, policies and dashboards as code | platform | Terraform `grafana` provider in `homelab-infra`, once there's more than a handful; alert rules are already code via CI ([ADR-0026](../decisions/0026-grafana-managed-alert-rules-synced-from-git-by-ci.md)) | When the UI setup grows |
-| How the SRE agents read metrics and logs | ai-stack | A scoped Grafana Cloud read token behind an MCP server, never in a transcript | Playbook 07 |
+| How the SRE agents read metrics and logs | ai-stack | A scoped Grafana Cloud read token behind an MCP server, never in a transcript | [ADR-0028](../decisions/0028-agent-read-access-through-upstream-mcp-sidecars.md) (accepted) |
 | Observability stack | platform | Grafana Cloud free tier through Alloy (`k8s-monitoring` chart); rules in Git imported by CI into Grafana-managed rules; alerts to Slack. Self-hosted VictoriaMetrics when a third node arrives | [ADR-0021](../decisions/0021-grafana-cloud-for-monitoring.md) (accepted, amended by [ADR-0026](../decisions/0026-grafana-managed-alert-rules-synced-from-git-by-ci.md)), playbook 05 |
 | Site generator after MkDocs Material's maintenance ends (Nov 5, 2026) | meta | Stay on MkDocs 1.6.1 (pinned); evaluate Zensical | Zensical blog/plugin parity |
 | Third Proxmox node | proxmox | `pve03`, i7-12700T, 32 GB, joined 2026-11-07 | [ADR-0030](../decisions/0030-three-node-proxmox-cluster.md) |
 | What to do with pve03's spare ~17 GB | proxmox | Keep free until Backstage (playbook 08) is sized; candidates: grow `k3s-03`, self-host Langfuse (ADR-0012) or VictoriaMetrics (ADR-0021) | After playbook 08 |
-| The crew's k8s-mcp can't read `applications.argoproj.io` — no way to check Argo CD app health from within a crew | ai-stack | | |
-| Hermes' fallback when `investigate_alert` errors is untested — drill 5a's self-heal was too fast to catch the crew-down window | ai-stack | | |
-| Drill 6 (budget) is untested — walked through the scenario but never fired a real budget exhaustion | ai-stack | | |
+| Scored evaluations for agent reports | ai-stack | The evals/alerts/ fixtures as a Langfuse dataset, scored by hand first | Playbook 07 follow-up |
+| A shared lab-reader ClusterRole | ai-stack | Rename when a third reader appears | Playbook 07b |
+| The crew's k8s-mcp can't read `applications.argoproj.io` — no way to check Argo CD app health from within a crew | ai-stack | Open a read-only issue upstream; a home-grown MCP tool as fallback | Playbook 07 follow-up |
+| Hermes' fallback when `investigate_alert` errors is untested — drill 5a's self-heal was too fast to catch the crew-down window | ai-stack | Trigger a follow-on alert with a fake crew URL, or add a readiness probe that reports 503 for the crew-down window | Playbook 07b |
+| Drill 6 (budget) is untested — walked through the scenario but never fired a real budget exhaustion | ai-stack | Run a real budget-limit hit by lowering `max_budget` to $0.01 with a one-hour window, then restore | Playbook 07b |
