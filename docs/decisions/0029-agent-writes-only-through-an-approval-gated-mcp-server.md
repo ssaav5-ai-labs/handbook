@@ -6,7 +6,7 @@ domain: ai-stack
 tags: [mcp, hermes, approvals, rbac, security, agents, argocd]
 status: proposed
 created: 2026-11-04
-updated: 2026-11-09
+updated: 2026-11-13
 visibility: public
 reuse: portable
 related: [0019-gitops-with-argo-cd-app-of-apps.md, 0023-hermes-on-k3s-pod-as-sandbox.md, 0027-crewai-crews-as-mcp-tools.md, 0028-agent-read-access-through-upstream-mcp-sidecars.md]
@@ -42,6 +42,7 @@ Option 3. `lab-actions` runs in namespace `sre`, from the crews' image with its 
 - A prompt injection in an alert can't trigger a write: the alert path is unattended, and the crews have no route to the server.
 - Approval fatigue is the real risk: if "Allow once" becomes reflex, the guard is gone. Keep actions few, and show the reason and the arguments.
 - One more small pod (about 48 Mi) and a second token in Hermes' Secret.
+- RBAC on Hermes' ServiceAccount is the enforcing boundary for shell actions, and it must stay read-only. Hermes' approval prompt only keys off a fixed, code-shipped set of dangerous-command patterns that does not include `kubectl` — a shell `kubectl rollout restart` ran with no approval prompt and was stopped only because the SA cannot patch. So `approvals.deny` blocks the `kubectl` write verbs Hermes must never run, and the read-only SA is the backstop for any pattern that slips through.
 
 ## In a team or enterprise setting
 Separate the agent that reasons from the identity that acts: actions as narrow, typed tools behind a policy point (approval, change window, ticket), each with its own least-privilege identity, and desired-state changes through Git. This is the same shape as a bot-driven ChatOps runbook, with an LLM choosing which runbook to propose.
