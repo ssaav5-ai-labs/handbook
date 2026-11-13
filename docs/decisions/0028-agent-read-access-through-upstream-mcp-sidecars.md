@@ -4,9 +4,9 @@ title: Give agents read access through upstream MCP servers run as sidecars, eac
 description: The SRE crews read the cluster through kubernetes-mcp-server (read-only, Hermes' reader role) and Grafana Cloud through mcp-grafana (writes disabled, Viewer service account); each runs as a loopback-only sidecar with its own credential, and the crews' container holds neither.
 domain: ai-stack
 tags: [mcp, kubernetes, grafana-cloud, rbac, security, agents, sidecars]
-status: proposed
+status: accepted
 created: 2026-11-04
-updated: 2026-11-09
+updated: 2026-11-13
 visibility: public
 reuse: portable
 related: [0021-grafana-cloud-for-monitoring.md, 0023-hermes-on-k3s-pod-as-sandbox.md, 0027-crewai-crews-as-mcp-tools.md, 0029-agent-writes-only-through-an-approval-gated-mcp-server.md]
