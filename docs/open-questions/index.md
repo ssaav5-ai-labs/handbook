@@ -22,14 +22,14 @@ updated: 2026-11-13
 | Default coding harness | ai-stack | OpenCode (any model); Claude Code optional | Playbook 00 |
 | SRE agent framework: CrewAI vs LangGraph | ai-stack | CrewAI, with tools as MCP servers so it stays swappable | [ADR-0027](../decisions/0027-crewai-crews-as-mcp-tools.md) (accepted) |
 | Uses for the Raspberry Pi 3s | proxmox | Uptime Kuma for outside-the-cluster checks; DNS later. No QDevice (ADR-0013) | After playbook 05 |
-| AI factory architecture | ai-factory | | After platform is up |
+| AI factory architecture | ai-factory | First product is an IDP on plain Backstage; catalog from one taxonomy in Git | [ADR-0034](../decisions/0034-plain-backstage-for-the-idp.md), [ADR-0035](../decisions/0035-catalog-metadata-from-one-taxonomy-in-git.md) (proposed) |
 | Proxmox provisioning | proxmox | OpenTofu (bpg/proxmox) + cloud-init template | [ADR-0014](../decisions/0014-provision-proxmox-vms-opentofu-bpg-provider.md) |
 | k3s topology (nodes, HA, storage) | k3s | Three servers with embedded etcd behind kube-vip, heavy apps on `k3s-03`; local-path storage | [ADR-0015](../decisions/0015-k3s-embedded-etcd-server-and-agent.md), [ADR-0031](../decisions/0031-k3s-three-servers-behind-kube-vip.md) (proposed) |
 | GitOps controller | platform | Argo CD, slim and self-managed, app-of-apps from `homelab-gitops` | [ADR-0019](../decisions/0019-gitops-with-argo-cd-app-of-apps.md) (accepted) |
 | Secrets management | platform | SOPS + age in Git, KSOPS in Argo CD; age key in the password manager | [ADR-0020](../decisions/0020-secrets-in-git-with-sops-age-ksops.md) (accepted) |
 | Move `homelab-infra/.env` (k3s token) into SOPS | platform | Yes, with the lab age key | Playbook 05, Part B |
 | TLS for lab services on the LAN (the gateway is plain HTTP) | platform | A lab CA with cert-manager, trusted on Windows and in dev containers, together with lab DNS on a Pi | With the DNS question |
-| Private access to the lab's web UIs from the phone when away | platform | Tailscale with the Kubernetes operator, nothing public; Grafana is already reachable in the cloud | Playbook 06 |
+| Private access to the lab's web UIs from the phone when away | platform | Tailscale with the Kubernetes operator, nothing public; Grafana is already reachable in the cloud. Now also needed to reach the devbox (ADR-0033) away from home | Playbook 06 |
 | Gateway virtual keys and spend database | ai-stack | One virtual key per client with its own budget; a small Postgres on k3s | Playbook 06 (Hermes is the second client) |
 | k3s control-plane metrics (scheduler, controller manager, etcd) | k3s | Off for now; expose with k3s server flags if a problem needs them (mind the 10k-series budget) | When needed |
 | Self-manage CoreDNS with anti-affinity (k3s re-creates it with 1 replica on restart; `install.sh` re-scales it) | k3s | Later; `install.sh` re-scales the embedded CoreDNS to 2 replicas for now (not anti-affined, so it could co-locate) | |

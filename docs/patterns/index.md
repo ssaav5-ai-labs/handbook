@@ -17,3 +17,4 @@ Anything with `reuse: portable` belongs here or links here. This is the kit that
 | Pattern | Use it when |
 |---|---|
 | [Agent finds, human acts](agent-finds-human-acts.md) | An agent works a stream for a person and the outcome is sent under their name (applications, outreach, replies) |
+| [Ownership metadata from one source, stamped everywhere](ownership-metadata-from-one-source.md) | Several tools (catalog, Git, cluster, VMs, telemetry) need to agree on who owns what |
