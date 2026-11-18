@@ -22,7 +22,7 @@ updated: 2026-11-13
 | Default coding harness | ai-stack | OpenCode (any model); Claude Code optional | Playbook 00 |
 | SRE agent framework: CrewAI vs LangGraph | ai-stack | CrewAI, with tools as MCP servers so it stays swappable | [ADR-0027](../decisions/0027-crewai-crews-as-mcp-tools.md) (accepted) |
 | Uses for the Raspberry Pi 3s | proxmox | Uptime Kuma for outside-the-cluster checks; DNS later. No QDevice (ADR-0013) | After playbook 05 |
-| AI factory architecture | ai-factory | | After platform is up |
+| AI factory architecture | ai-factory | First product is an IDP on plain Backstage; catalog from one taxonomy in Git | [ADR-0034](../decisions/0034-plain-backstage-for-the-idp.md), [ADR-0035](../decisions/0035-catalog-metadata-from-one-taxonomy-in-git.md) (proposed) |
 | Proxmox provisioning | proxmox | OpenTofu (bpg/proxmox) + cloud-init template | [ADR-0014](../decisions/0014-provision-proxmox-vms-opentofu-bpg-provider.md) |
 | k3s topology (nodes, HA, storage) | k3s | Three servers with embedded etcd behind kube-vip, heavy apps on `k3s-03`; local-path storage | [ADR-0015](../decisions/0015-k3s-embedded-etcd-server-and-agent.md), [ADR-0031](../decisions/0031-k3s-three-servers-behind-kube-vip.md) (proposed) |
 | GitOps controller | platform | Argo CD, slim and self-managed, app-of-apps from `homelab-gitops` | [ADR-0019](../decisions/0019-gitops-with-argo-cd-app-of-apps.md) (accepted) |

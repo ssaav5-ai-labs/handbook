@@ -45,5 +45,7 @@ updated: 2026-11-13
 | [0027](0027-crewai-crews-as-mcp-tools.md) | CrewAI crews as MCP tools, exposed to Hermes | ai-stack | accepted |
 | [0028](0028-agent-read-access-through-upstream-mcp-sidecars.md) | Agent read access through upstream MCP sidecars | ai-stack | accepted |
 | [0029](0029-agent-writes-only-through-an-approval-gated-mcp-server.md) | Agent writes only through an approval-gated MCP server | ai-stack | accepted |
+| [0034](0034-plain-backstage-for-the-idp.md) | Plain Backstage for the IDP, deployed by Argo CD on `k3s-03`; OpenChoreo considered and not adopted | ai-factory | proposed |
+| [0035](0035-catalog-metadata-from-one-taxonomy-in-git.md) | Teams and products in one taxonomy in Git (Backstage format), stamped onto repos, namespaces, VMs and telemetry | ai-factory | proposed |
 | [0036](0036-job-search-agent-finds-human-applies.md) | Job search: the agent finds and drafts from job-alert emails, never submits; the human applies | career | proposed |
 | [0038](0038-claude-coordinates-changes-gitops-only-write-path.md) | Claude coordinates change work through PRs; Argo CD is the only write path; autonomy set per layer | ai-stack | accepted |
