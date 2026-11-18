@@ -29,7 +29,7 @@ updated: 2026-11-13
 | Secrets management | platform | SOPS + age in Git, KSOPS in Argo CD; age key in the password manager | [ADR-0020](../decisions/0020-secrets-in-git-with-sops-age-ksops.md) (accepted) |
 | Move `homelab-infra/.env` (k3s token) into SOPS | platform | Yes, with the lab age key | Playbook 05, Part B |
 | TLS for lab services on the LAN (the gateway is plain HTTP) | platform | A lab CA with cert-manager, trusted on Windows and in dev containers, together with lab DNS on a Pi | With the DNS question |
-| Private access to the lab's web UIs from the phone when away | platform | Tailscale with the Kubernetes operator, nothing public; Grafana is already reachable in the cloud | Playbook 06 |
+| Private access to the lab's web UIs from the phone when away | platform | Tailscale with the Kubernetes operator, nothing public; Grafana is already reachable in the cloud. Now also needed to reach the devbox (ADR-0033) away from home | Playbook 06 |
 | Gateway virtual keys and spend database | ai-stack | One virtual key per client with its own budget; a small Postgres on k3s | Playbook 06 (Hermes is the second client) |
 | k3s control-plane metrics (scheduler, controller manager, etcd) | k3s | Off for now; expose with k3s server flags if a problem needs them (mind the 10k-series budget) | When needed |
 | Self-manage CoreDNS with anti-affinity (k3s re-creates it with 1 replica on restart; `install.sh` re-scales it) | k3s | Later; `install.sh` re-scales the embedded CoreDNS to 2 replicas for now (not anti-affined, so it could co-locate) | |

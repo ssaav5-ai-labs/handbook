@@ -7,10 +7,12 @@ status: draft
 visibility: public
 reuse: lab-specific
 created: 2026-10-20
-updated: 2026-10-22
+updated: 2026-11-09
 ---
 
 # Workstation
+
+> **Moving to a devbox:** [ADR-0033](../../decisions/0033-dev-containers-on-a-devbox-vm.md) (proposed) moves the dev containers to a VM on `pve03`, with the laptop as a thin client and fallback; [playbook 02c](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/02c-devbox/PLAYBOOK.md) carries it out. This page describes the laptop setup until that run updates it.
 
 ## What's installed
 
