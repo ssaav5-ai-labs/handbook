@@ -6,7 +6,7 @@ domain: ai-stack
 tags: [hermes, agents, slack, grafana-cloud, skills, k3s, argocd]
 status: draft
 created: 2026-11-04
-updated: 2026-11-12
+updated: 2026-11-18
 visibility: public
 reuse: lab-specific
 blog: none
@@ -61,6 +61,28 @@ selects the servers a run gets; there is no `cron` toolset flag in v0.22.7.
 - Fallback rule: the `alert-triage` skill (0.2.0) calls `investigate_alert` for
   `warning`/`critical`; if the tool errors, times out or reports "busy", the skill falls
   back to the playbook 06 checks and says the crew was not available.
+
+## Cron jobs
+
+Cron jobs live in Hermes' state DB (`/opt/data`), not GitOps. They are created once by
+hand; the exact `hermes cron create` commands are recorded in
+`platform/hermes/cron-jobs.md` for a rebuild. List them with:
+
+```bash
+kubectl -n hermes exec deploy/hermes -c hermes -- hermes cron list
+```
+
+| Job | Schedule | Skill | Deliver (Slack) | Timezone |
+|---|---|---|---|---|
+| `daily-lab-status` | `0 8 * * *` | lab-status | #homelab-alerts | Europe/Dublin |
+| `grafana-alerts` | `every 2m` | alert-triage | #homelab-alerts | — |
+| `capacity-report` | `0 8 * * 1` | capacity-report | #homelab-alerts | Europe/Dublin |
+| `job-search-daily` | `30 7 * * 1-5` | job-search | #job-search | Europe/Dublin |
+| `job-search-friday` | `0 16 * * 5` | job-search | #job-search | Europe/Dublin |
+
+Cron sessions run with `cron_mode: deny`, so write tools (`draft_application`,
+`set_status`) can never be called unattended; the operator replies in the Slack thread and
+the agent maps those to the write tools in an interactive session.
 
 ## Resources
 
