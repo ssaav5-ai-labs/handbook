@@ -324,7 +324,7 @@ If you're resuming an earlier run, say so: the agent checks each step's Verify f
 - `platform/monitoring/rules.yaml`, group `lab`:
   - `SreCrewsDown`: `kube_deployment_status_replicas_available{cluster="homelab", namespace="sre", deployment="sre-crews"} == 0` for 15m, warning ("alert reports fall back to Hermes alone").
   - `CrewsBudgetLow`: the per-key remaining budget metric for alias `crews` below 1 USD for 15m, info (same metric as `HermesBudgetLow` in playbook 06; skip with a note if it wasn't available there).
-- Right-size with real numbers, as in playbook 06 step 8: 🧑 the Explore query for peak memory over the run for namespace `sre`, as `.runs/peak-memory-07.csv`; the agent proposes requests and limits by the same rule; ask before applying; PR, merge. The capacity report from step 7 should now agree with it: if not, record which one is wrong.
+- Right-size with real numbers (since 2026-11-13 the first PR of [playbook 07b](../07b-weekly-rightsize/PLAYBOOK.md) does this; without 07b, by hand as follows), as in playbook 06 step 8: 🧑 the Explore query for peak memory over the run for namespace `sre`, as `.runs/peak-memory-07.csv`; the agent proposes requests and limits by the same rule; ask before applying; PR, merge. The capacity report from step 7 should now agree with it: if not, record which one is wrong.
 
 **Verify:** The new rules are `Normal` in Grafana Cloud; 🧑 the series count is still under 5,000; no `OOMKilled` in `sre` during the drills or the next 10 minutes.
 **Record:** `reference-sre-crews.md`: alerts and final resources. Journal: before/after per node.
