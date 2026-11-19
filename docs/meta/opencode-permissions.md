@@ -28,7 +28,7 @@ Every code repo (`handbook`, `workstation`, `homelab-infra`, `homelab-gitops`, `
 Rules are matched top-to-bottom and the **last match wins**. The file is therefore ordered deliberately:
 
 1. broad `allow`s (baseline `*`, then git/gh/helper reads),
-2. general `ask`s (destructive git, kubectl writes, `rm`/`sudo`/`docker`, long `sleep`),
+2. general `ask`s (destructive git, kubectl writes, `rm`/`sudo`/`docker`, long `sleep ??*`),
 3. specific overrides (e.g. `git rebase origin/main*` allow, `git push --force-with-lease*` ask),
 4. absolute `deny`s last (force-push, history rewrite, secret names, `kubectl exec`),
 5. narrow read-only `ask`s after the `kubectl exec` deny — four exact `hermes` subcommands (`skills list`, `cron list`, `mcp list`, `--help`) that need to win over the blanket exec deny.
