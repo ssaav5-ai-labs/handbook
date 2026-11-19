@@ -64,7 +64,7 @@ A deny matches any command line **containing** a protected name, not just a file
 
 ## Test matrix
 
-The policy is verified in a fresh session. Expected results for the key cases:
+The policy is verified in a fresh session. The human judges each result from the screen: an `ask` must show a "Permission required" prompt. The agent's own report does not count, because it cannot see the prompt and an approved `ask` looks like an `allow` from its side (on 2026-11-19 an agent reported every `ask` as silently allowed; a human re-test showed they all prompted). Rejecting a prompt ends the agent's turn, so test one `ask` per message. Expected results for the key cases:
 
 | Command | Result |
 |---|---|
