@@ -4,9 +4,9 @@ title: Job-search agent design
 description: How the human-approved job-search agent works - inputs, the job-search MCP server and CronJob, Hermes in Slack, the career-vault layout, privacy controls, cost, open questions and how playbook 09 builds it.
 domain: ai-stack
 tags: [job-search, agents, crewai, hermes, mcp, slack, obsidian, privacy]
-status: draft
+status: built
 created: 2026-11-13
-updated: 2026-11-13
+updated: 2026-11-19
 visibility: public
 reuse: portable
 related: [../../decisions/0036-job-search-agent-finds-human-applies.md, ../../patterns/agent-finds-human-acts.md, reference-sre-crews.md, reference-hermes.md, reference-gateway.md, ../../decisions/0027-crewai-crews-as-mcp-tools.md, ../../decisions/0029-agent-writes-only-through-an-approval-gated-mcp-server.md]
@@ -15,7 +15,7 @@ blog: candidate
 
 # Job-search agent design
 
-Status: **design, not built.** The decision is [ADR-0036](../../decisions/0036-job-search-agent-finds-human-applies.md); the portable idea is the [agent finds, human acts](../../patterns/agent-finds-human-acts.md) pattern. Everything personal (profile, CV, roles, drafts) lives in the private `career-vault`; this page only describes the machinery.
+Status: **built** (2026-11-19, playbook 09). The decision is [ADR-0036](../../decisions/0036-job-search-agent-finds-human-applies.md); the portable idea is the [agent finds, human acts](../../patterns/agent-finds-human-acts.md) pattern. Everything personal (profile, CV, roles, drafts) lives in the private `career-vault`; this page only describes the machinery. Runtime deviations from this design are recorded in the [job-search runbook](runbook-job-search.md) and the [playbook 09 journal](../../journal/2026/2026-11-15-09-job-search.md).
 
 ## What it does, in one day
 
@@ -112,16 +112,16 @@ Role frontmatter: `company`, `title`, `source`, `source_id`, `url`, `score`, `st
 | Vault write credential | Write deploy key on `career-vault` only, SOPS-encrypted, mounted only in the `job-search` pod; server writes only under `job-search/` |
 | Personal data in public repos | Criteria and CV only in the vault; code and this page are generic |
 
-## Rough cost (estimate, not measured)
+## Cost (measured, 2026-11-15 → 19)
 
-About 40 alerts a day, about 15 left after rules, about 2k tokens each on `fast` is ~30k tokens a day; three drafts a week on `reason` at ~15k tokens each. With current cheap models that's well under 2 USD a month; the 3 USD key budget is the hard stop. Measure in the first week of the playbook run and record it here.
+The whole playbook run — scoring evals, daily feeds, drills and re-runs — came to about **0.20 USD** on the `jobs` key (0.184 USD at close, plus a few cents for the D2 drill re-runs) against a 3 USD / 30 day budget. The original estimate holds, and real alert volume is a fraction of the 40/day figure, so cost tracks the feed.
 
 ## Open questions (for Shawn)
 
 | Question | Options | Leaning |
 |---|---|---|
-| How alerts reach the agent | (a) a new Gmail used only for alerts, read over IMAP with an app password, fed by forwarding; (b) Gmail API on a main mailbox; (c) paste in Slack | (a) plus (c). The LinkedIn account's email is on Yahoo, where automatic forwarding may need Yahoo Mail Plus: if so, either pay for it, or send other boards' alerts straight to the new Gmail and share LinkedIn roles by hand. Never read the Yahoo mailbox itself, and don't make the alert mailbox the LinkedIn primary email (password resets). Gmail and Yahoo allow app passwords; Outlook.com needs OAuth |
-| Where the agent writes drafts | `main` under `job-search/` (Obsidian sees them at once) vs a `job-search` branch I merge | `main`: drafts are private and reversible, and a branch adds friction every day |
+| How alerts reach the agent | (a) a new Gmail used only for alerts, read over IMAP with an app password, fed by forwarding; (b) Gmail API on a main mailbox; (c) paste in Slack | **Decided (2026-11-19):** a dedicated Gmail set as the LinkedIn primary email, with LinkedIn 2SV via an authenticator app and the Yahoo address kept as secondary; only job-alert emails on it. Read over IMAP through the egress proxy, read-only (`BODY.PEEK`), and only the LinkedIn alert sender is admitted |
+| Where the agent writes drafts | `main` under `job-search/` (Obsidian sees them at once) vs a `job-search` branch I merge | **Decided (2026-11-19):** the private `career-vault` under `job-search/drafts/` (not `main` of any public repo) |
 | Company watchlist | Also poll a short list of target companies' public ATS boards daily | Later, once the alert-based flow is tuned |
 | More sources | Alert emails from other boards (no work); boards with an official API or RSS (e.g. Adzuna, remote-focused boards), each checked against its terms first. No paid LinkedIn plan adds an API for job seekers, so Premium Career stays a human-side tool | Add alert emails now, APIs after the first week |
 | Daily post time and cap | 07:30, top five | As proposed, adjust after a week |
