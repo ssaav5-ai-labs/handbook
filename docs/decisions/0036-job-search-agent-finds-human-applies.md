@@ -4,9 +4,9 @@ title: Let an agent find and draft job applications, never submit them; the huma
 description: A small job-search crew reads job-alert emails, scores roles against a private profile and drafts tailored notes into the private career vault; Hermes in Slack is the front end; nothing touches LinkedIn or submits an application, and every write needs a human "Allow once".
 domain: career
 tags: [job-search, agents, crewai, hermes, mcp, approvals, privacy, linkedin]
-status: proposed
+status: accepted
 created: 2026-11-13
-updated: 2026-11-13
+updated: 2026-11-19
 visibility: public
 reuse: portable
 related: [0005-private-career-vault.md, 0008-vendor-neutral-ai-stack.md, 0020-secrets-in-git-with-sops-age-ksops.md, 0023-hermes-on-k3s-pod-as-sandbox.md, 0025-gateway-virtual-keys-with-postgres.md, 0027-crewai-crews-as-mcp-tools.md, 0028-agent-read-access-through-upstream-mcp-sidecars.md, 0029-agent-writes-only-through-an-approval-gated-mcp-server.md, ../domains/ai-stack/design-job-search.md, ../patterns/agent-finds-human-acts.md]
