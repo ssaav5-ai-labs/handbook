@@ -7,14 +7,14 @@ status: active
 visibility: public
 reuse: lab-specific
 created: 2026-10-20
-updated: 2026-11-13
+updated: 2026-11-19
 ---
 
 # Open questions
 
 | Question | Domain | Leaning | Decided in |
 |---|---|---|---|
-| Custom domain for the site | github | Later; use `ssaav5-ai-labs.github.io/handbook` for now | Playbook 01 |
+| Custom domain for the site | github | Buy one before blog links pile up on LinkedIn; Pages hosts it free ([ADR-0018](../decisions/0018-blog-in-handbook-linkedin-for-reach.md)) | Before the first post is shared |
 | Primary handbook editor | workstation | OpenKnowledge for handbook, Obsidian for career vault | Playbook 00, step 6 |
 | Models behind each gateway alias | ai-stack | Cheapest that fits, checked against current OpenRouter prices | Playbook 00, step 4 |
 | Where Hermes runs | ai-stack | On k3s as its own pod (no Docker socket); the laptop has no room (8 GB) | [ADR-0023](../decisions/0023-hermes-on-k3s-pod-as-sandbox.md) (accepted) |

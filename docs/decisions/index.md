@@ -31,6 +31,7 @@ updated: 2026-11-13
 | [0015](0015-k3s-embedded-etcd-server-and-agent.md) | k3s with embedded etcd: one server and one agent, pinned install scripts | k3s | accepted |
 | [0016](0016-zram-swap-on-k3s-nodes.md) | zram swap plus a small swap file on k3s nodes, `LimitedSwap` for pods | k3s | accepted |
 | [0017](0017-kubeconfig-on-windows-mounted-into-containers.md) | Kubeconfig on Windows mounted into dev containers; SSH key in a Docker volume | workstation | accepted |
+| [0018](0018-blog-in-handbook-linkedin-for-reach.md) | Blog in the handbook on GitHub Pages; LinkedIn for reach | meta | proposed |
 | [0019](0019-gitops-with-argo-cd-app-of-apps.md) | Slim, self-managed Argo CD with app-of-apps, from `homelab-gitops` | platform | accepted |
 | [0020](0020-secrets-in-git-with-sops-age-ksops.md) | Secrets in Git with SOPS + age, decrypted by KSOPS in Argo CD | platform | accepted |
 | [0021](0021-grafana-cloud-for-monitoring.md) | Grafana Cloud free tier through Alloy; alert rules in Git, alerts to Slack | platform | accepted (amended by 0026) |
