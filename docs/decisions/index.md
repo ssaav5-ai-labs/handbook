@@ -50,3 +50,4 @@ updated: 2026-11-13
 | [0035](0035-catalog-metadata-from-one-taxonomy-in-git.md) | Teams and products in one taxonomy in Git (Backstage format), stamped onto repos, namespaces, VMs and telemetry | ai-factory | proposed |
 | [0036](0036-job-search-agent-finds-human-applies.md) | Job search: the agent finds and drafts from job-alert emails, never submits; the human applies | career | proposed |
 | [0038](0038-claude-coordinates-changes-gitops-only-write-path.md) | Claude coordinates change work through PRs; Argo CD is the only write path; autonomy set per layer | ai-stack | accepted |
+| [0039](0039-model-per-task-and-scheduled-alias-reviews.md) | Pick the model per task before a session starts; review what each gateway alias points to on a schedule | ai-stack | proposed |

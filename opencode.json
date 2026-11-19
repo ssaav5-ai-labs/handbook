@@ -13,6 +13,16 @@
     }
   },
   "model": "gateway/code",
+  "agent": {
+    "plan":  { "model": "gateway/reason" },
+    "build": { "model": "gateway/code" },
+    "scribe": {
+      "mode": "subagent",
+      "model": "gateway/fast",
+      "description": "Writes journal entries, summaries and handover notes from facts the caller gives it. Use for prose, not for code or commands.",
+      "prompt": "You write short, plain journal entries, summaries and handover notes in the handbook's style. Use only the facts you are given; never invent identifiers, versions or results. Don't run commands."
+    }
+  },
   "permission": {
     "external_directory": {
       "*": "ask",

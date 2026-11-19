@@ -30,10 +30,13 @@ Paste this into your AI agent from the repo folder:
 
 > Run the playbook `playbooks/NN-<name>`.
 
+Start the session on the first step's alias, e.g. `opencode --model gateway/code`.
+
 ## Steps
 
 ### 1. <Step name>
 **Why:** <one sentence>
+**Model:** <`code` | `reason` | `fast`; see RUNNING.md>
 **Questions:** <what the agent asks you, each with a recommended default>
 **Actions:** <what the agent does>
 **Verify:** <a command or check that proves the step is done>
