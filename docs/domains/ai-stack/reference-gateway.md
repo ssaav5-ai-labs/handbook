@@ -8,8 +8,8 @@ status: active
 visibility: public
 reuse: portable
 created: 2026-10-22
-updated: 2026-11-08
-related: [index.md, ../../decisions/0008-vendor-neutral-ai-stack.md]
+updated: 2026-11-19
+related: [index.md, ../../decisions/0008-vendor-neutral-ai-stack.md, ../../decisions/0039-model-per-task-and-scheduled-alias-reviews.md]
 blog: none
 ---
 
@@ -46,6 +46,19 @@ inherits them. `/metrics/` is unauthenticated but only reachable in-cluster (the
 | `local` | Ollama at `host.docker.internal:11434` | free | Offline/private work (Ollama not installed yet) |
 
 Prices are OpenRouter list prices at time of choice; re-check before swapping.
+
+### Which model is behind an alias right now
+OpenCode only shows the alias (`Build · code · LLM gateway` = agent, alias, provider). The live mapping is the gateway's `model_list` in homelab-gitops. To check from any shell, including OpenCode's `!` prefix, with a key allowed to read model info:
+
+```bash
+curl -s -H "Authorization: Bearer $LLM_GATEWAY_KEY" "$LLM_GATEWAY_URL/v1/model/info" \
+  | jq '.data[] | {alias: .model_name, model: .litellm_params.model}'
+```
+
+A Langfuse trace or the OpenRouter activity page also shows the real model per call.
+
+### Changing what an alias points to
+Follow [ADR-0039](../../decisions/0039-model-per-task-and-scheduled-alias-reviews.md): a monthly review (or an event such as a major release, a price change or repeated errors) proposes a candidate, the candidate runs the replay set behind a trial alias such as `code-next`, and only a winner is promoted. Promotion is one homelab-gitops PR; update the table above and add a journal entry in the same change.
 
 ## Virtual keys
 

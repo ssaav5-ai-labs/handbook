@@ -7,7 +7,7 @@ status: active
 visibility: public
 reuse: portable
 created: 2026-10-20
-updated: 2026-11-13
+updated: 2026-11-19
 ---
 
 # How an AI agent runs a playbook
@@ -58,4 +58,5 @@ From there the agent drives. The human answers questions and does the manual ste
 - **A denied command is an answer.** If a permission rule denies or the human rejects a command, stop and ask; don't build a second route to the same result (a stub `ksops`, a downloaded binary, a token pulled from `gh`). The same rule binds Hermes (`SOUL.md`).
 - **Cluster writes go through Git.** The agent reads the cluster freely, but changes it only through a PR that Argo CD syncs. The few direct writes a run needs (deleting a pod the agent's own PR broke, a throwaway test pod, an Argo CD refresh) are proposed with `ask`, and `kubectl apply` of anything is the human's (`bootstrap/install.sh`). Test pods go in `default` and are deleted in the same command (`kubectl run … --rm`).
 - **Commit messages from a file.** Write the message with the edit tool and commit with `git commit -F <file>`. A message passed inline (`-m "$(cat <<EOF …)"`) is matched against the deny rules and gets blocked when it mentions a protected name such as `versions.env` or `ksops`.
+- **Model per step group ([ADR-0039](../docs/decisions/0039-model-per-task-and-scheduled-alias-reviews.md)).** Start each session on the alias named in the steps' `**Model:**` line, or in the kickoff prompt (`opencode --model gateway/<alias>`). Defaults: `reason` for design, security, RBAC and secrets steps, `code` for building and verifying, `fast` for journaling and summaries (the `scribe` subagent). Never switch models inside a session: caches are per model, so a switch resends the whole context at full price. Change models only at a session boundary, and write the alias used in the journal. If a step fails its Verify twice, stop and report; Claude restarts the step in a new session on `reason`.
 - **One session per step group.** Start a fresh agent session every two or three steps and hand over through the journal (it holds state, IDs and next steps). A four-day single session (playbook 07: 11 compactions) loses detail at each compaction; the journal doesn't.
