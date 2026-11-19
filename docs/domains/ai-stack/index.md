@@ -9,7 +9,7 @@ created: 2026-10-20
 updated: 2026-11-13
 visibility: public
 reuse: portable
-related: [../../decisions/0008-vendor-neutral-ai-stack.md, ../../decisions/0009-hermes-for-local-automation.md, ../../decisions/0010-langfuse-for-tracing-and-evals.md, ../../decisions/0022-llm-gateway-on-k3s.md, ../../decisions/0023-hermes-on-k3s-pod-as-sandbox.md, ../../decisions/0024-alerts-to-hermes-by-polling-then-in-cluster-webhook.md, ../../decisions/0025-gateway-virtual-keys-with-postgres.md, reference-gateway.md, reference-hermes.md, reference-sre-crews.md, runbook-gateway-fallback.md, runbook-hermes.md, runbook-sre-crews.md, howto-promote-hermes-skill.md, design-job-search.md]
+related: [../../decisions/0008-vendor-neutral-ai-stack.md, ../../decisions/0009-hermes-for-local-automation.md, ../../decisions/0010-langfuse-for-tracing-and-evals.md, ../../decisions/0022-llm-gateway-on-k3s.md, ../../decisions/0023-hermes-on-k3s-pod-as-sandbox.md, ../../decisions/0024-alerts-to-hermes-by-polling-then-in-cluster-webhook.md, ../../decisions/0025-gateway-virtual-keys-with-postgres.md, reference-gateway.md, reference-hermes.md, reference-sre-crews.md, reference-job-search.md, runbook-gateway-fallback.md, runbook-hermes.md, runbook-sre-crews.md, runbook-job-search.md, howto-promote-hermes-skill.md, design-job-search.md]
 blog: candidate
 ---
 
