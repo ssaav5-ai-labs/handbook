@@ -72,7 +72,7 @@ The `_write_vault()` function handles one conflict automatically (pull, rebase, 
 
 ## Budget reached
 
-**Symptoms:** `score_role` returns "budget reached" or "insufficient quota" in Slack.
+**Symptoms:** `score_role` returns `error: jobs budget reached, ask the human to raise the jobs key budget` (or `draft_application` fails with a gateway 422 "Budget has been exceeded").
 
 The `jobs` gateway key has a `3 USD / 30 days` budget.
 
@@ -81,6 +81,8 @@ The `jobs` gateway key has a `3 USD / 30 days` budget.
 2. **Short-term:** Raise the key's budget to 5 USD (🧑 via port-forward), then lower it back after the batch.
 3. **Long-term:** If this happens often, the `fast` scoring model is using too many tokens. Check Langfuse for token-per-call trends and adjust `max_tokens` in `score.py` or tune `profile.md`'s `shortlist_threshold` upward to score fewer roles.
 4. **Fallback drill (playbook 10 drill 5):** Lower the key to 0.01 USD for an hour, call `score_role`, expect the "budget reached" message in Slack, then restore.
+
+The scorer classifies budget-exceeded, 401 and 402 as non-retryable and returns them as a single clear message (no retry). If you instead see `unparseable reply after 2 attempts`, that is a *different* failure (empty/invalid LLM output) — see "Pod down or not ready".
 
 ## Turn it off
 
