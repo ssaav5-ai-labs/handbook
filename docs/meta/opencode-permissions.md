@@ -20,7 +20,7 @@ Every code repo (`handbook`, `workstation`, `homelab-infra`, `homelab-gitops`, `
 | Tier | Meaning | Examples |
 |---|---|---|
 | `allow` | runs without a prompt | `git status`, `git switch -c`, `git commit`, `gh pr view`, `grep`, `head`, `cat`, `find` |
-| `ask` | runs only after the human approves | `git reset`, `git rebase`, `gh pr merge`, `kubectl apply`, `rm`, `docker`, `sudo` |
+| `ask` | runs only after the human approves | `git reset`, `git rebase`, `gh pr merge`, `kubectl apply`, `rm`, `docker`, `sudo`, `sleep 30` |
 | `deny` | never runs | `git push --force`, `git rebase -i`, `gh pr merge --admin`, anything that names a secret file |
 
 ## Rule ordering
@@ -28,11 +28,12 @@ Every code repo (`handbook`, `workstation`, `homelab-infra`, `homelab-gitops`, `
 Rules are matched top-to-bottom and the **last match wins**. The file is therefore ordered deliberately:
 
 1. broad `allow`s (baseline `*`, then git/gh/helper reads),
-2. general `ask`s (destructive git, kubectl writes, `rm`/`sudo`/`docker`),
+2. general `ask`s (destructive git, kubectl writes, `rm`/`sudo`/`docker`, long `sleep`),
 3. specific overrides (e.g. `git rebase origin/main*` allow, `git push --force-with-lease*` ask),
-4. absolute `deny`s last (force-push, history rewrite, secret names).
+4. absolute `deny`s last (force-push, history rewrite, secret names, `kubectl exec`),
+5. narrow read-only `ask`s after the `kubectl exec` deny — four exact `hermes` subcommands (`skills list`, `cron list`, `mcp list`, `--help`) that need to win over the blanket exec deny.
 
-A `deny` placed after an `allow` always wins, which is what makes the secret and force-push guards hold regardless of how a command is phrased.
+A `deny` placed after an `allow` always wins, which is what makes the secret and force-push guards hold. The same "last wins" rule makes tier 5 work: an `ask` placed **after** a `deny` wins, restoring a narrow, read-only path through the exec block.
 
 ## Secret-name denies
 
@@ -78,7 +79,12 @@ The policy is verified in a fresh session. Expected results for the key cases:
 | `gh pr merge 1 --admin` | deny |
 | `git rebase -i origin/main` | deny |
 | `git reset --hard` | ask |
+| `sleep 30` | ask |
+| `sleep 5` | allow |
+| `kubectl -n hermes exec deploy/hermes -c hermes -- hermes skills list` | ask |
+| `kubectl -n hermes exec deploy/hermes -c hermes -- hermes config get x` | deny |
+| `scripts/image-digest.sh ghcr.io/ssaav5-ai-labs/job-search sha-a1e18e8` | allow |
 
 ## Keeping the copies in sync
 
-There is one policy, copied into each repo, and one exception: `workstation` keeps `git push` as `ask` (see above). When the policy changes, update all five repos, each in its own PR, so the guard never drifts from the documented behavior.
+There is one policy, copied into each repo, with two narrow exceptions: `workstation` keeps `git push` as `ask` (no required status checks on `main`), and `homelab-gitops` adds `scripts/image-digest.sh *` as `allow` (the sanctioned tool for "never retype a digest"). When the policy changes, update all five repos, each in its own PR, so the guard never drifts from the documented behavior.
