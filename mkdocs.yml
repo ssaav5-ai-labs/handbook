@@ -14,6 +14,10 @@ plugins:
   - search
   - blog:
       blog_dir: blog
+      post_url_format: "{slug}"
+      post_readtime: true
+      archive_date_format: yyyy
+      categories_allowed: [Homelab, AI, SRE, Leadership, Career]
   - tags
   - llmstxt:
       sections:
