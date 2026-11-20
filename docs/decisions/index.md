@@ -30,7 +30,7 @@ updated: 2026-11-13
 | [0014](0014-provision-proxmox-vms-opentofu-bpg-provider.md) | Provision Proxmox VMs with OpenTofu (bpg/proxmox) and a cloud-init template | proxmox | proposed |
 | [0015](0015-k3s-embedded-etcd-server-and-agent.md) | k3s with embedded etcd: one server and one agent, pinned install scripts | k3s | accepted |
 | [0016](0016-zram-swap-on-k3s-nodes.md) | zram swap plus a small swap file on k3s nodes, `LimitedSwap` for pods | k3s | accepted |
-| [0017](0017-kubeconfig-on-windows-mounted-into-containers.md) | Kubeconfig on Windows mounted into dev containers; SSH key in a Docker volume | workstation | accepted |
+| [0017](0017-kubeconfig-on-windows-mounted-into-containers.md) | Kubeconfig on Windows mounted into dev containers; SSH key in a Docker volume (laptop fallback since 0033) | workstation | accepted |
 | [0019](0019-gitops-with-argo-cd-app-of-apps.md) | Slim, self-managed Argo CD with app-of-apps, from `homelab-gitops` | platform | accepted |
 | [0020](0020-secrets-in-git-with-sops-age-ksops.md) | Secrets in Git with SOPS + age, decrypted by KSOPS in Argo CD | platform | accepted |
 | [0021](0021-grafana-cloud-for-monitoring.md) | Grafana Cloud free tier through Alloy; alert rules in Git, alerts to Slack | platform | accepted (amended by 0026) |
@@ -45,7 +45,7 @@ updated: 2026-11-13
 | [0027](0027-crewai-crews-as-mcp-tools.md) | CrewAI crews as MCP tools, exposed to Hermes | ai-stack | accepted |
 | [0028](0028-agent-read-access-through-upstream-mcp-sidecars.md) | Agent read access through upstream MCP sidecars | ai-stack | accepted |
 | [0029](0029-agent-writes-only-through-an-approval-gated-mcp-server.md) | Agent writes only through an approval-gated MCP server | ai-stack | accepted |
-| [0033](0033-dev-containers-on-a-devbox-vm.md) | Dev containers on a devbox VM on pve03 via DevPod's SSH provider; laptop as thin client (amends 0017) | workstation | proposed |
+| [0033](0033-dev-containers-on-a-devbox-vm.md) | Dev containers on a devbox VM on pve03 via DevPod's SSH provider; laptop as thin client (amends 0017) | workstation | accepted |
 | [0034](0034-plain-backstage-for-the-idp.md) | Plain Backstage for the IDP, deployed by Argo CD on `k3s-03`; OpenChoreo considered and not adopted | ai-factory | proposed |
 | [0035](0035-catalog-metadata-from-one-taxonomy-in-git.md) | Teams and products in one taxonomy in Git (Backstage format), stamped onto repos, namespaces, VMs and telemetry | ai-factory | proposed |
 | [0036](0036-job-search-agent-finds-human-applies.md) | Job search: the agent finds and drafts from job-alert emails, never submits; the human applies | career | proposed |
