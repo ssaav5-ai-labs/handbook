@@ -7,12 +7,12 @@ status: draft
 visibility: public
 reuse: lab-specific
 created: 2026-10-20
-updated: 2026-11-09
+updated: 2026-11-20
 ---
 
 # Workstation
 
-> **Moving to a devbox:** [ADR-0033](../../decisions/0033-dev-containers-on-a-devbox-vm.md) (proposed) moves the dev containers to a VM on `pve03`, with the laptop as a thin client and fallback; [playbook 02c](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/02c-devbox/PLAYBOOK.md) carries it out. This page describes the laptop setup until that run updates it.
+> **Dev containers run on the devbox:** since 2026-11-20 ([playbook 02c](https://github.com/ssaav5-ai-labs/handbook/blob/main/playbooks/02c-devbox/PLAYBOOK.md), [ADR-0033](../../decisions/0033-dev-containers-on-a-devbox-vm.md), proposed) every repo's dev container runs on the `devbox` VM on `pve03` (VM 110, `192.168.86.214`), reached with `hbx <repo>` ([daily start](runbook-daily-start.md)). Each repo has two definitions: `.devcontainer/devcontainer.json` for the laptop (Windows mounts, `${localEnv:...}` env) and `.devcontainer/devbox/devcontainer.json` for the devbox (`/home/debian` binds, `--env-file ~/.devbox/env`, tmux). They share the Dockerfile, so tool versions can't drift. The laptop setup below is the fallback when `pve03` is down.
 
 ## What's installed
 

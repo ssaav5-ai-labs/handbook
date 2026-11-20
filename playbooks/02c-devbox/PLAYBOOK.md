@@ -4,9 +4,9 @@ title: Move the dev containers to a devbox VM on pve03
 description: A Debian VM with Docker on pve03 runs every repo's dev container through DevPod's SSH provider, so all of them stay up at once and survive the laptop sleeping; the laptop keeps its workspaces as a fallback.
 domain: workstation
 tags: [workstation, devcontainer, devpod, proxmox, opentofu, tmux]
-status: draft
+status: active
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-20
 visibility: public
 reuse: portable
 repo: homelab-infra
@@ -23,12 +23,12 @@ blog: candidate
 # Move the dev containers to a devbox VM on pve03
 
 ## What you'll have at the end
-A VM called `devbox` on `pve03` runs Docker, and every repo's dev container runs there instead of on the laptop ([ADR-0033](../../docs/decisions/0033-dev-containers-on-a-devbox-vm.md)). `handbook`, `homelab-infra`, `homelab-gitops` and `workstation` can all be up at once. You reach each one with `ssh <repo>-box.devpod`, inside `tmux`, so an OpenCode run keeps going when the laptop sleeps. The laptop only runs PowerShell, `ssh` and your editors. Docker Desktop and the old workspaces stay installed as the fallback.
+A VM called `devbox` on `pve03` runs Docker, and every repo's dev container runs there instead of on the laptop ([ADR-0033](../../docs/decisions/0033-dev-containers-on-a-devbox-vm.md)). `handbook`, `homelab-infra`, `homelab-gitops` and `workstation` can all be up at once. You reach each one with `hbx <repo>` (SSH to the devbox, then `docker exec` into the container, inside `tmux`), so an OpenCode run keeps going when the laptop sleeps. The laptop only runs PowerShell, `ssh` and your editors. Docker Desktop and the old workspaces stay installed as the fallback.
 
 ```
 laptop (PowerShell, ssh, Obsidian)            pve03
-   │  ssh handbook-box.devpod                 └─ devbox (VM 110, 4 vCPU, 8 GB, nvme-data)
-   │  ssh homelab-infra-box.devpod                 Docker
+   │  hbx handbook                            └─ devbox (VM 110, 4 vCPU, 8 GB, nvme-data)
+   │  hbx homelab-infra                            Docker
    └──────────────────────────────────────────►    ├─ handbook-box        ─┐ mounts from /home/debian:
                                                    ├─ homelab-infra-box    │  .kube, .devbox/ssh, .sops-age,
                                                    ├─ homelab-gitops-box   │  code/.../handbook
@@ -51,7 +51,7 @@ Paste this into OpenCode from `/workspaces/homelab-infra`:
 ### 1. The devbox VM in OpenTofu
 **Why:** the devbox is code like the k3s VMs, so it can be rebuilt instead of backed up (ADR-0033).
 **Questions:** size. Default: 4 vCPU, 8192 MB, 120 GB on `nvme-data`, VM ID 110, `192.168.86.214`.
-**Actions:** on a branch in `homelab-infra`, add `tofu/devbox.tf`. It's a separate `proxmox_virtual_environment_vm.devbox` resource, so the `k3s` map and `install.sh` never see it. It clones template `9003` on `pve03` with the same cloud-init user and key as the k3s VMs, guest agent on, and `on_boot = true`. Add a `devbox` object variable and its block in `terraform.auto.tfvars.example`. 🧑 You add the same block to the real `terraform.auto.tfvars`, in your own shell. Then `tofu plan` and `tofu apply`.
+**Actions:** on a branch in `homelab-infra`, add `tofu/devbox.tf`. It's a separate `proxmox_virtual_environment_vm.devbox` resource, so the `k3s` map and `install.sh` never see it. It clones template `9003` on `pve03` with the same cloud-init user and key as the k3s VMs, guest agent on, and `on_boot = true`. Add a `devbox` object variable whose defaults are the sizes above (so the real `terraform.auto.tfvars` needs no change) and its block in `terraform.auto.tfvars.example`. 🧑 In your own shell, load the Proxmox token first, or the provider fails with *Missing Proxmox VE API Endpoint*: `cd /workspaces/homelab-infra && set -a && . ./.env && set +a`, then `cd tofu && tofu plan` and `tofu apply`.
 **Verify:** the plan shows **1 to add, 0 to change, 0 to destroy**. `ssh -i ~/.ssh/homelab debian@192.168.86.214 hostname` prints `devbox`. PR with CI green, squash-merged.
 **Record:** [reference-proxmox](../../docs/domains/proxmox/reference-proxmox.md) (a VM table row, with "no backup job" and why).
 
@@ -101,7 +101,7 @@ chmod 600 ~/.devbox/env ~/.kube/config ~/.devbox/ssh/homelab ~/.sops-age/keys.tx
 **Record:** [workstation overview](../../docs/domains/workstation/index.md) (the two definitions and why).
 
 ### 6. DevPod's SSH provider and the first workspace 🧑
-**Why:** DevPod on the laptop drives Docker on the devbox over SSH, and writes the `<id>.devpod` SSH entries you already use.
+**Why:** DevPod on the laptop drives Docker on the devbox over SSH. Its `<id>.devpod` SSH entries don't work on Windows with this provider (they wait for the DevPod agent and time out after about 5 minutes; seen 2026-11-20 with DevPod on Windows), so you enter the containers with `docker exec` over plain SSH instead, the same trick the laptop runbook uses.
 **You do:** in **PowerShell**, add a host entry so DevPod and `ssh` find the devbox and its key. Run `notepad $env:USERPROFILE\.ssh\config` and add:
 ```
 Host devbox
@@ -113,11 +113,14 @@ Check it with `ssh devbox hostname`, which should print `devbox`. Then, one at a
 ```
 devpod provider add ssh --name devbox -o HOST=devbox
 devpod up github.com/ssaav5-ai-labs/homelab-infra --provider devbox --id homelab-infra-box --devcontainer-path .devcontainer/devbox/devcontainer.json --ide none
-ssh -t homelab-infra-box.devpod "tmux new -A -s main"
+ssh devbox docker ps -q --filter "volume=/workspaces/homelab-infra-box"
+ssh -t devbox docker exec -it -u vscode -w /workspaces/homelab-infra-box <id> tmux new -A -s main
 ```
+Use the ID the third command prints. DevPod names the folder after the workspace ID, so it is `/workspaces/<repo>-box`, not `/workspaces/<repo>`.
 The agent looks up the SSH provider's current options on DevPod's docs first and corrects the commands if they have changed.
-**Verify:** inside the new container:
+**Verify:** inside the new container. The devbox's `~/.devbox/ssh` holds only the key, so first give it the lab's host keys (once; every workspace shares the file):
 ```
+ssh-keyscan -t ed25519 192.168.86.201 192.168.86.202 192.168.86.203 192.168.86.211 192.168.86.212 192.168.86.213 192.168.86.214 >> ~/.ssh/known_hosts 2>/dev/null
 echo "$LLM_GATEWAY_URL ${LLM_GATEWAY_KEY:+key set} ${GH_TOKEN:+gh set}"
 kubectl get nodes
 ssh -i ~/.ssh/homelab -o BatchMode=yes debian@192.168.86.211 true && echo ssh-ok
@@ -130,20 +133,20 @@ You should see the URL with `key set gh set`, the nodes, `ssh-ok`, `age-ok`, gh 
 
 ### 7. The other workspaces, and the tmux check 🧑
 **Why:** prove all four fit at once, and that a run survives a dropped connection.
-**You do:** the same `devpod up` for `handbook`, `homelab-gitops` and `workstation` (ids `<repo>-box`). In `homelab-infra-box`, start `opencode`, then close the PowerShell window. Open a new one and run `ssh -t homelab-infra-box.devpod "tmux new -A -s main"`: OpenCode is still there.
-**Verify:** `ssh devbox 'docker ps --format "{{.Names}}" | wc -l; free -m | sed -n 2p'` shows four containers and more than 1.5 GB available. In each container, `opencode` starts on the gateway model (`echo $LLM_GATEWAY_URL` isn't empty), and a test branch push works (`git push --dry-run origin HEAD`).
+**You do:** the same `devpod up` for `handbook`, `homelab-gitops` and `workstation` (ids `<repo>-box`). In `homelab-infra-box`, start `opencode`, then close the PowerShell window. Open a new one and run `hbx homelab-infra` (step 8 adds it to your profile; until then, the `docker exec` line from step 6): OpenCode is still there.
+**Verify:** `ssh devbox 'docker ps -q | wc -l; free -m | sed -n 2p'` shows four containers and more than 1.5 GB available. In each container, `opencode` starts on the gateway model (`echo $LLM_GATEWAY_URL` isn't empty), and a test branch push works (`git push --dry-run origin HEAD`).
 **Record:** journal; the memory figures in ADR-0033 if they differ.
 
 ### 8. The new daily start
 **Why:** the runbook has to match what you now do every day.
 **Actions:** update [runbook-daily-start](../../docs/domains/workstation/runbook-daily-start.md):
-- **Start:** `devpod up <repo>-box --ide none` (only needed after a devbox reboot), then `ssh -t <repo>-box.devpod "tmux new -A -s main"`.
-- **Second shell (for `sops edit`):** `ssh -t <repo>-box.devpod "tmux new -A -s human"`.
+- **Start:** `hbx <repo>` (or `hb` for the handbook). It runs `devpod up <repo>-box` itself when the container isn't running, for example after a devbox reboot.
+- **Second shell (for `sops edit`):** a second window in the same tmux session (`Ctrl+b c`), or the `docker exec` line with `tmux new -A -s human`.
 - **Stop:** nothing to do. Optionally `devpod stop <repo>-box`.
 - **Handbook on Windows:** `git pull` before editing in Obsidian or OpenKnowledge.
 - **Fallback when `pve03` is down:** start Docker Desktop and use the laptop workspaces as before.
 
-Replace the `hb` function in both PowerShell profiles with one that runs `ssh -t handbook-box.devpod "tmux new -A -s main"`, and add `hbx <repo>` for the others. Remove `GH_TOKEN`, `LLM_GATEWAY_*` from the "Env vars empty" fix row for the devbox (they come from `~/.devbox/env`).
+Replace the `hb` function in both PowerShell profiles with `hbx` and `hb` from the runbook, and keep the old laptop function as `hbl <repo>`, without the laptop gateway line. Remove `GH_TOKEN`, `LLM_GATEWAY_*` from the "Env vars empty" fix row for the devbox (they come from `~/.devbox/env`).
 **Verify:** you follow the new runbook from a fresh PowerShell window with Docker Desktop **not** running, and reach OpenCode in `handbook-box`.
 **Record:** the runbook; journal.
 

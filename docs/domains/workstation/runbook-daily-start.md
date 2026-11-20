@@ -1,116 +1,123 @@
 ---
 type: runbook
 title: Start and stop the local dev environment
-description: Daily routine on the Windows laptop - start the laptop gateway (fallback), start any repo's dev container, open a shell, resume the agent, check the cluster, and shut down.
+description: Daily routine - open any repo's dev container on the devbox VM with hbx (inside tmux), resume the agent, check the cluster; the laptop containers (hbl) are the fallback when pve03 is down.
 domain: workstation
-tags: [devpod, docker, windows, opencode, k3s, argocd, grafana, sops]
+tags: [devpod, docker, windows, opencode, k3s, argocd, grafana, sops, devbox, tmux]
 status: active
 visibility: public
 reuse: lab-specific
 created: 2026-10-23
-updated: 2026-11-04
-related: [index.md, ../../../playbooks/00-workstation-knowledge/PLAYBOOK.md, ../ai-stack/runbook-gateway-fallback.md]
+updated: 2026-11-20
+related: [index.md, ../../../playbooks/00-workstation-knowledge/PLAYBOOK.md, ../../../playbooks/02c-devbox/PLAYBOOK.md, ../../decisions/0033-dev-containers-on-a-devbox-vm.md, ../ai-stack/runbook-gateway-fallback.md]
 ---
 
 # Start and stop the local dev environment
 
-Everything runs in **PowerShell on Windows** unless a step says "in the container".
+Since playbook 02c (2026-11-20) the dev containers run on the `devbox` VM on `pve03` ([ADR-0033](../../decisions/0033-dev-containers-on-a-devbox-vm.md)). The laptop only runs PowerShell, `ssh` and editors; Docker Desktop doesn't need to be running. Everything here runs in **PowerShell on Windows** unless a step says "in the container".
 
 ## Start
 
-1. Start **Docker Desktop** and wait until it says *Engine running*.
-2. Start the laptop LLM gateway **only if the cluster gateway is down** (or you haven't switched to it yet — see [Gateway](#gateway)):
-   ```powershell
-   cd $env:USERPROFILE\code\github.com\ssaav5-ai-labs\workstation\gateway
-   docker compose up -d
-   ```
-3. Start the handbook dev container. The workspace already exists, so this only starts it (no rebuild):
-   ```powershell
-   devpod up handbook --ide none
-   ```
-4. Open a shell in it. `devpod ssh` fails on Windows ("The parameter is incorrect"), so use Docker. The container ID changes on every rebuild, so look it up each time:
-   ```powershell
-   $c = docker ps --format "{{.ID}} {{.Image}}" | Select-String "vsc-handbook" | ForEach-Object { $_.Line.Split(" ")[0] } | Select-Object -First 1
-   docker exec -it -u vscode -w /workspaces/handbook $c bash
-   ```
-   Need a second shell? Open another PowerShell window and run step 4 again.
-5. In the container, resume the agent where you left off, or start fresh:
-   ```bash
-   opencode --continue    # last session
-   opencode               # new session
-   ```
-
-## Any other repo container
-
-For `homelab-gitops` (or any repo with a DevPod workspace), use the generic path:
-
 ```powershell
-devpod up "$env:USERPROFILE\code\github.com\ssaav5-ai-labs\homelab-gitops" --ide none
-ssh homelab-gitops.devpod
-cd /workspaces/homelab-gitops
+hb                     # the handbook
+hbx homelab-gitops     # any other repo: handbook, homelab-infra, homelab-gitops, workstation
 ```
 
-Need a second shell (for `sops edit`)? Run `ssh homelab-gitops.devpod` in another PowerShell window. Both shells share the folder; don't create a branch in the human shell.
+You land in `/workspaces/<repo>-box`, inside the tmux session `main`. All four containers can run at once, so open one PowerShell window per repo. In the container, resume the agent or start fresh:
+
+```bash
+opencode --continue    # last session
+opencode               # new session
+```
+
+Closing the window, a dropped Wi-Fi or a sleeping laptop doesn't stop anything: run `hbx <repo>` again and you're back in the same tmux session, with OpenCode where you left it.
+
+## The shortcuts
+
+In your PowerShell profile (`notepad $PROFILE`; run `New-Item -Force $PROFILE` first if it doesn't exist), then `. $PROFILE` or a new window:
+
+```powershell
+Set-Alias devpod "$env:LOCALAPPDATA\DevPod\devpod-cli.exe"
+
+function hbx([string]$repo = 'handbook') {
+  $c = ssh devbox docker ps -q --filter "volume=/workspaces/$repo-box"
+  if (-not $c) { devpod up "$repo-box" --ide none; $c = ssh devbox docker ps -q --filter "volume=/workspaces/$repo-box" }
+  ssh -t devbox docker exec -it -u vscode -w "/workspaces/$repo-box" $c tmux new -A -s main
+}
+
+function hb { hbx handbook }
+```
+
+`hbx` asks Docker on the devbox for the container that mounts `/workspaces/<repo>-box`, starts the workspace with `devpod up` if none is running (after a devbox reboot), and attaches to tmux. It uses `docker exec` because `ssh <repo>-box.devpod` times out on Windows with DevPod's SSH provider. It relies on this entry in `$env:USERPROFILE\.ssh\config`:
+
+```
+Host devbox
+  HostName 192.168.86.214
+  User debian
+  IdentityFile ~/.ssh/homelab
+```
+
+## Second shell
+
+For `sops edit` or anything a human types while the agent works: inside tmux, `Ctrl+b c` opens a second window (`Ctrl+b n` switches). Don't create a branch in the human shell; both share the folder.
 
 ## Check it works
 
 In the container:
 ```bash
-echo "$LLM_GATEWAY_URL ${LLM_GATEWAY_KEY:+key set}"
+echo "$LLM_GATEWAY_URL ${LLM_GATEWAY_KEY:+key set} ${GH_TOKEN:+gh set}"
 curl -s -H "Authorization: Bearer $LLM_GATEWAY_KEY" "$LLM_GATEWAY_URL/v1/models" | grep -o '"id":"[^"]*"'
 ```
-You should see the URL, `key set`, and the aliases fast, code, reason and local. OpenCode's footer should show `code · LLM gateway`.
+You should see the URL, `key set gh set`, and the aliases fast, code, reason and local. OpenCode's footer should show `code`.
 
 ## Check the cluster
 
-In the `homelab-gitops` shell:
+In any container:
 
 ```bash
-kubectl get nodes                 # both Ready
+kubectl get nodes                 # three Ready
 kubectl -n argocd get applications
 ```
 
 In Grafana Cloud (`https://<stack>.grafana.net`) → **Alerting → Alert rules** → `homelab` folder: `LabSilent` is `Normal`. Argo CD apps are `Synced`/`Healthy`.
 
-## Gateway
+## Handbook on Windows
 
-The cluster gateway (`http://llm.<k3s-01-ip>.nip.io`) is primary after playbook 05; the laptop Compose gateway is the fallback. Keep the laptop gateway running until `LLM_GATEWAY_URL` is switched, then start it only when the cluster is down. See [the fallback runbook](../ai-stack/runbook-gateway-fallback.md).
+Obsidian and OpenKnowledge edit the Windows clone, which is no longer what the containers mount (they mount the devbox clone). `git pull` in `%USERPROFILE%\code\github.com\ssaav5-ai-labs\handbook` before editing there, and push through a PR as usual.
 
-## Shortcut (optional)
+## Stop
 
-Add this to your PowerShell profile (`notepad $PROFILE`), open a new window, and then `hb` (short for "handbook") does steps 1-4 in one go, starting Docker Desktop if it isn't running:
+Nothing to do. The containers keep running on the devbox. Optionally `devpod stop <repo>-box` to free memory on the devbox.
+
+## Fallback: pve03 or the devbox is down
+
+Start Docker Desktop and use the laptop workspaces as before, one at a time (the laptop has 8 GB). Add this to the profile too:
+
 ```powershell
-function hb {
+function hbl([string]$repo = 'handbook') {
   docker info *> $null
   if ($LASTEXITCODE -ne 0) {
     Start-Process "$env:ProgramFiles\Docker\Docker\Docker Desktop.exe"
     Write-Host "Waiting for Docker Desktop..."
     do { Start-Sleep 3; docker info *> $null } while ($LASTEXITCODE -ne 0)
   }
-  docker compose -f "$env:USERPROFILE\code\github.com\ssaav5-ai-labs\workstation\gateway\compose.yaml" up -d
-  devpod up handbook --ide none
-  $c = docker ps --format "{{.ID}} {{.Image}}" | Select-String "vsc-handbook" | ForEach-Object { $_.Line.Split(" ")[0] } | Select-Object -First 1
-  docker exec -it -u vscode -w /workspaces/handbook $c bash
+  devpod up $repo --ide none
+  $c = docker ps --format "{{.ID}} {{.Image}}" | Select-String "vsc-$repo" | ForEach-Object { $_.Line.Split(" ")[0] } | Select-Object -First 1
+  docker exec -it -u vscode -w "/workspaces/$repo" $c bash
 }
 ```
 
-## Stop
-
-```powershell
-devpod stop handbook
-docker compose -f "$env:USERPROFILE\code\github.com\ssaav5-ai-labs\workstation\gateway\compose.yaml" stop
-```
-OpenCode history survives stops and rebuilds (it lives in the `opencode-data` volume). Uncommitted files survive too, because the handbook folder is on Windows.
-
-If you've switched to the cluster gateway, remove the `docker compose ... up -d` line from the `hb` shortcut; the laptop gateway is the fallback now.
+`hbl homelab-infra` starts Docker Desktop if needed and opens the laptop container. Stop it with `devpod stop <repo>` before opening another. The laptop LLM gateway (Compose in `workstation/gateway`) is only for when the cluster gateway is down; see [the fallback runbook](../ai-stack/runbook-gateway-fallback.md).
 
 ## When something is off
 
 | Symptom | Fix |
 |---|---|
-| `failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine` | Docker Desktop isn't running (step 1). Start it, wait until `docker info` works, then retry. |
-| `devpod` not recognized | The alias from playbook 00 isn't loaded: open a new PowerShell window, or check `$PROFILE`. |
-| `$c` is empty | The container isn't running: rerun step 3 and check `docker ps`. |
-| Env vars empty in the container | They come from Windows user variables at container creation. Check `echo $env:LLM_GATEWAY_URL` in PowerShell, then `devpod up handbook --recreate --ide none`. |
-| Gateway calls fail | `docker compose ps` in `workstation\gateway`; `docker compose logs --tail 50`. |
-| Changed `devcontainer.json` | `devpod up handbook --recreate --ide none` (history and files are kept). |
+| `hbx` hangs or `ssh devbox` fails | Is the VM up? Proxmox UI → `pve03` → VM 110. `ssh devbox hostname` should print `devbox`. |
+| `hbx` prints `chdir to cwd ... no such file or directory` | The workspace ID is `<repo>-box`, so the folder is `/workspaces/<repo>-box`. Check `ssh devbox docker ps`. |
+| `ssh <repo>-box.devpod` waits for "devpod agent to come up" and times out | Known on Windows with the SSH provider. Use `hbx`. |
+| `Host key verification failed` from inside a container | The devbox's shared `known_hosts` is missing a host: `ssh-keyscan -t ed25519 <ip> >> ~/.ssh/known_hosts` in any container. |
+| Env vars empty in a devbox container | They come from `~/.devbox/env` on the devbox at container creation (`ssh devbox 'cut -d= -f1 ~/.devbox/env'` lists the names). Fix the file, then `devpod up <repo>-box --recreate --ide none`. |
+| Changed `.devcontainer/devbox/devcontainer.json` | Merge it, then `devpod up <repo>-box --recreate --ide none` (history in the `opencode-data` volume and the repo folder are kept). |
+| `failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine` | Only matters for `hbl`: Docker Desktop isn't running. `hbl` starts it. |
+| A command with `"` inside fails in PowerShell (`template parsing error`, `accepts no arguments`) | PowerShell mangles inner double quotes when calling `ssh`/`docker`. Use single quotes outside, or none inside. |
