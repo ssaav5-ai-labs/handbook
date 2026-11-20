@@ -4,9 +4,9 @@ title: Run the dev containers on a devbox VM on pve03, with the laptop as a thin
 description: A Debian VM on pve03 runs Docker, and DevPod's SSH provider puts every repo's dev container there, so all of them can stay up at once and keep running while the laptop sleeps; secrets and the handbook clone live on the devbox, and the laptop's Docker Desktop becomes the fallback.
 domain: workstation
 tags: [workstation, devcontainer, devpod, proxmox, capacity, secrets]
-status: proposed
+status: accepted
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-20
 visibility: public
 reuse: portable
 related: [0017-kubeconfig-on-windows-mounted-into-containers.md, 0030-three-node-proxmox-cluster.md, 0006-local-repo-layout.md, 0020-secrets-in-git-with-sops-age-ksops.md, ../domains/workstation/index.md, ../domains/workstation/runbook-daily-start.md, ../../playbooks/02c-devbox/PLAYBOOK.md]
@@ -28,7 +28,7 @@ Every repo has a dev container, run by DevPod on Docker Desktop on the Windows l
 4. **Dev containers as pods on k3s (DevPod's Kubernetes provider):** no extra VM, but every workspace competes with the lab's own apps for memory, and an outage of the cluster takes the tools needed to fix it with it.
 
 ## Decision
-Option 3, proposed on 2026-11-09 for Shawn's acceptance.
+Option 3, proposed on 2026-11-09 and accepted by Shawn on 2026-11-20 after playbook 02c ran. One change from the plan: the containers are entered with `docker exec` over SSH (`hbx <repo>`), because DevPod's `<id>.devpod` SSH entries time out on Windows with the SSH provider.
 - **The VM:** `devbox`, VM 110 on `pve03`, 4 vCPU, 8 GB, 120 GB on `nvme-data`, `192.168.86.214`. Cloned from template `9003` and defined in `homelab-infra/tofu` next to the k3s VMs. Docker CE comes from Docker's apt repository with a pinned version.
 - **The workspaces:** DevPod on the laptop gets an SSH provider `devbox`. Workspaces are created from the GitHub URL, with IDs `<repo>-box`, so the laptop workspaces stay as a fallback. Each repo gets a second dev container definition, `.devcontainer/devbox/devcontainer.json`, from the template in `workstation/devcontainer/devbox/`. It uses the same image and features, with mounts that point at paths on the devbox instead of `%USERPROFILE%`.
 - **Secrets and mounts (amends ADR-0017 for the devbox):**
