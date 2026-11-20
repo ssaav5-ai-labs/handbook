@@ -98,10 +98,18 @@ Created 2026-10-23 (pve01), 2026-10-28 (pve02); 9003 in playbook 02b. Image from
 | k3s-02 | 102 | pve02 | 4 (host) | 4608 MB | 60 GB | 192.168.86.212 |
 | k3s-03 | 103 | pve03 | 6 (host) | 12288 MB | 100 GB | 192.168.86.213 |
 
+## Other VMs
+
+| VM | ID | Node | vCPU | RAM | Disk | IP | Backup |
+|---|---|---|---|---|---|---|---|
+| devbox | 110 | pve03 | 4 (host) | 8192 MB | 120 GB `nvme-data` | 192.168.86.214 | none: rebuilt from `homelab-infra/tofu/devbox.tf` + `devbox/prepare.sh`; work lives in Git, secrets in the password manager ([ADR-0033](../../decisions/0033-dev-containers-on-a-devbox-vm.md)) |
+
+The devbox is a separate `proxmox_virtual_environment_vm.devbox` resource, so `k3s/install.sh` and `nodes.conf` never see it.
+
 All: ballooning off, scsi0 on `local-lvm` (`k3s-03`: `nvme-data`) (raw, discard, iothread), vmbr0, on boot, guest agent, cloud-init user `debian`, provisioned by OpenTofu (`bpg/proxmox`).
 
 ### Why 4.5 GB on pve01 and pve02, 12 GB on pve03
 
 `pve01` and `pve02` have 8 GB RAM (~5.8 GB free idle). 4.5 GB per VM leaves ~1.3 GB on pve01 (which runs k3s server + etcd) and ~1.3 GB on pve02 (agent only) for Proxmox overhead and backup NFS traffic. The sizing is tight on purpose: apps like Backstage fit, Langfuse doesn't (ADR-0012).
 
-`pve03` has 32 GB. `k3s-03` takes 12 GB; about 2.5 GB stays for Proxmox, and the rest stays free until an ADR claims it ([ADR-0030](../../decisions/0030-three-node-proxmox-cluster.md)).
+`pve03` has 32 GB. `k3s-03` takes 12 GB and the devbox 8 GB ([ADR-0033](../../decisions/0033-dev-containers-on-a-devbox-vm.md)); about 2.5 GB stays for Proxmox, and the remaining ~9 GB stays free until an ADR claims it ([ADR-0030](../../decisions/0030-three-node-proxmox-cluster.md)).
