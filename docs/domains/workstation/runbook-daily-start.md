@@ -120,5 +120,4 @@ function hbl([string]$repo = 'handbook') {
 | Env vars empty in a devbox container | They come from `~/.devbox/env` on the devbox at container creation (`ssh devbox 'cut -d= -f1 ~/.devbox/env'` lists the names). Fix the file, then `devpod up <repo>-box --recreate --ide none`. |
 | Changed `.devcontainer/devbox/devcontainer.json` | Merge it, then `devpod up <repo>-box --recreate --ide none` (history in the `opencode-data` volume and the repo folder are kept). |
 | `failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine` | Only matters for `hbl`: Docker Desktop isn't running. `hbl` starts it. |
-| OpenCode's logo shows only "code", or colours look washed out | tmux isn't passing true colour. In the container: `printf 'set -g default-terminal "tmux-256color"\nset -as terminal-features ",*:RGB"\n' > ~/.tmux.conf && tmux source-file ~/.tmux.conf`, then restart OpenCode. |
 | A command with `"` inside fails in PowerShell (`template parsing error`, `accepts no arguments`) | PowerShell mangles inner double quotes when calling `ssh`/`docker`. Use single quotes outside, or none inside. |
