@@ -57,6 +57,8 @@ The canonical devcontainer template lives in the [workstation repo](https://gith
 
 See [howto-new-repo-devcontainer.md](howto-new-repo-devcontainer.md). In short: copy the `Dockerfile` and `devcontainer.json` from the workstation repo into the new repo's `.devcontainer/`, then `devpod up .`.
 
+Agent user on the devbox (Claude Code, headless OpenCode, read-only kubeconfig): [howto-devbox-agent-user.md](howto-devbox-agent-user.md).
+
 ## Repos
 
 | Repo | Location | Type |
