@@ -82,7 +82,7 @@ handbook/
 ├── .agents/skills/           # harness-neutral Agent Skills (canonical)
 ├── .opencode/skills/         # skills OpenCode loads, e.g. open-knowledge
 ├── .ok/  .okignore           # OpenKnowledge editor config and index exclusions
-├── scripts/                  # sync-skills.sh copies .agents/skills to harness folders
+├── scripts/                  # sync-skills.sh copies .agents/skills to harness folders; opencode-delegate-config.sh makes the headless OpenCode config
 ├── templates/                # one template per doc type
 ├── playbooks/                # AI-first setup playbooks for this lab
 │   ├── RUNNING.md            # the protocol an agent follows to run one
